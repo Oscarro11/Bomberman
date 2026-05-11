@@ -1,23 +1,20 @@
 #include "MapRenderer.h"
 
 #include <SFML/Graphics.hpp>
-#include <iostream>
 #include <fstream>
-#include <vector>
-#include <string>
+#include <iostream>
 
 using namespace std;
 
-void mostrarMapa(const string& nombreArchivo)
+bool MapRenderer::cargarMapa(const string& nombreArchivo)
 {
-    vector<string> mapa;
+    mapa.clear();
 
     ifstream archivo(nombreArchivo);
 
     if (!archivo.is_open())
     {
-        cout << "No se pudo abrir el archivo\n";
-        return;
+        return false;
     }
 
     string linea;
@@ -29,6 +26,31 @@ void mostrarMapa(const string& nombreArchivo)
 
     archivo.close();
 
+    return true;
+}
+
+vector<string> MapRenderer::obtenerMapa() const
+{
+    return mapa;
+}
+
+int MapRenderer::obtenerFilas() const
+{
+    return mapa.size();
+}
+
+int MapRenderer::obtenerColumnas() const
+{
+    if (mapa.empty())
+    {
+        return 0;
+    }
+
+    return mapa[0].size();
+}
+
+void MapRenderer::mostrarMapa()
+{
     sf::Font font;
 
     if (!font.openFromFile("assets/fonts/consola.ttf"))
@@ -39,15 +61,15 @@ void mostrarMapa(const string& nombreArchivo)
 
     const int FONT_SIZE = 32;
 
-    int filas = mapa.size();
-    int columnas = mapa[0].size();
+    int filas = obtenerFilas();
+    int columnas = obtenerColumnas();
 
     sf::RenderWindow window(
         sf::VideoMode(
             sf::Vector2u(columnas * FONT_SIZE,
                          filas * FONT_SIZE)
         ),
-        "Bomberman Console"
+        "Bomberman"
     );
 
     while (window.isOpen())
