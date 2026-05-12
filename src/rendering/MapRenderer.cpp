@@ -1,4 +1,4 @@
-#include "MapRenderer.h"
+#include "rendering/MapRenderer.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -14,6 +14,7 @@ void mostrarMapa(const string& nombreArchivo)
 
     ifstream archivo(nombreArchivo);
 
+    /*
     if (!archivo.is_open())
     {
         cout << "No se pudo abrir el archivo\n";
@@ -31,7 +32,7 @@ void mostrarMapa(const string& nombreArchivo)
 
     sf::Font font;
 
-    if (!font.openFromFile("assets/fonts/consola.ttf"))
+    if (!font.loadFromFile("assets/fonts/consola.ttf"))
     {
         cout << "No se pudo cargar la fuente\n";
         return;
@@ -61,7 +62,12 @@ void mostrarMapa(const string& nombreArchivo)
         }
 
         window.clear(sf::Color::Black);
+        sf::RectangleShape rectangle = sf::RectangleShape(sf::Vector2f(50, 50));
+        rectangle.setFillColor(sf::Color::Red);
 
+        window.draw(rectangle);
+
+        /*
         for (int i = 0; i < filas; i++)
         {
             for (int j = 0; j < columnas; j++)
@@ -84,5 +90,7 @@ void mostrarMapa(const string& nombreArchivo)
         }
 
         window.display();
+        
     }
+        */
 }

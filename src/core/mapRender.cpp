@@ -1,4 +1,4 @@
-#include "MapRenderer.h"
+#include "rendering/MapRenderer.hpp"
 
 int main()
 {

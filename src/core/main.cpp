@@ -2,7 +2,7 @@
 #include <SFML/System.hpp>
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML en WSL", sf::Style::Titlebar | sf::Style::Titlebar);
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window", sf::Style::Titlebar || sf::Style::Close);
     
 
     while (window.isOpen()) {
@@ -25,9 +25,16 @@ int main() {
         }
 
         //Update
-
+        
         //Render
         window.clear();
+
+        sf::RectangleShape rectangle = sf::RectangleShape(sf::Vector2f(50.f, 50.f));
+        rectangle.setPosition(50.f, 50.f);
+        rectangle.setFillColor(sf::Color::White);
+
+        window.draw(rectangle);
+
         window.display();
     }
 
