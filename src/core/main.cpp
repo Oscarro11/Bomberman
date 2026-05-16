@@ -1,42 +1,27 @@
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>
+#include "systems/Vista.hpp"
+#include "core/Engine.hpp"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Window", sf::Style::Titlebar || sf::Style::Close);
-    
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Bomberman");
+    sf::Font font;
+    font.loadFromFile("assets/fonts/consola.ttf");
 
-    while (window.isOpen()) {
+    Vista vista(window, font);
+
+    // Menu loop — runs until player hits Start
+    while (window.isOpen() && !vista.shouldStartGame()) {
         sf::Event event;
-
-        //Event polling 
         while (window.pollEvent(event)) {
-            switch (event.type){
-                case sf::Event::KeyPressed:
-                    if (event.key.code == sf::Keyboard::Escape){
-                        window.close();
-                    }
-                    
-                    break;
-                
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-            }
+            if (event.type == sf::Event::Closed) window.close();
+            vista.handleEvent(event);
         }
-
-        //Update
-        
-        //Render
-        window.clear();
-
-        sf::RectangleShape rectangle = sf::RectangleShape(sf::Vector2f(50.f, 50.f));
-        rectangle.setPosition(50.f, 50.f);
-        rectangle.setFillColor(sf::Color::White);
-
-        window.draw(rectangle);
-
-        window.display();
+        vista.render();
     }
 
-    return 0;
+    /*
+    // Hand off to game loop
+    if (vista.shouldStartGame()) {
+        Engine engine("map.txt", vista.getPlayers());
+        // game loop here...
+    }*/
 }
