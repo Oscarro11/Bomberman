@@ -1,4 +1,4 @@
-#include "MapRenderer.h"
+#include "include/core/MapRenderer.h"
 
 #include <SFML/Graphics.hpp>
 #include <fstream>
