@@ -1,55 +1,12 @@
 #include "core/MapRenderer.h"
+#include "core/Tablero.h"
 
 #include <SFML/Graphics.hpp>
-#include <fstream>
 #include <iostream>
 
 using namespace std;
 
-bool MapRenderer::cargarMapa(const string& nombreArchivo)
-{
-    mapa.clear();
-
-    ifstream archivo(nombreArchivo);
-
-    if (!archivo.is_open())
-    {
-        return false;
-    }
-
-    string linea;
-
-    while (getline(archivo, linea))
-    {
-        mapa.push_back(linea);
-    }
-
-    archivo.close();
-
-    return true;
-}
-
-vector<string> MapRenderer::obtenerMapa() const
-{
-    return mapa;
-}
-
-int MapRenderer::obtenerFilas() const
-{
-    return mapa.size();
-}
-
-int MapRenderer::obtenerColumnas() const
-{
-    if (mapa.empty())
-    {
-        return 0;
-    }
-
-    return mapa[0].size();
-}
-
-void MapRenderer::mostrarMapa()
+void MapRenderer::render(Tablero& tablero)
 {
     sf::Font font;
 
@@ -61,8 +18,8 @@ void MapRenderer::mostrarMapa()
 
     const int FONT_SIZE = 32;
 
-    int filas = obtenerFilas();
-    int columnas = obtenerColumnas();
+    int filas = tablero.getFilas();
+    int columnas = tablero.getColumnas();
 
     sf::RenderWindow window(
         sf::VideoMode(
@@ -75,6 +32,7 @@ void MapRenderer::mostrarMapa()
     while (window.isOpen())
     {
         sf::Event event;
+
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
@@ -89,16 +47,53 @@ void MapRenderer::mostrarMapa()
         {
             for (int j = 0; j < columnas; j++)
             {
+                int cell = tablero.getCell(i, j);
+
+                char simbolo = '.';
+
+                if (cell == 11)
+                    simbolo = '@';
+
+                else if (cell == 12)
+                    simbolo = '$';
+
+                else if (cell / 10 == 2)
+                    simbolo = '1';
+
+                else if (cell / 10 == 3)
+                    simbolo = '!';
+
+                else if (cell == 4)
+                    simbolo = '0';
+
+                else if (cell == 5)
+                    simbolo = '#';
+
+                else if (cell == 6)
+                    simbolo = '+';
+
+                else if (cell == 7)
+                    simbolo = '/';
+
+                else if (cell == 8)
+                    simbolo = '.';
+
+                else if (cell / 10 == 9)
+                    simbolo = '?';
+
                 sf::Text texto;
+
                 texto.setFont(font);
 
-                texto.setString(string(1, mapa[i][j]));
+                texto.setString(string(1, simbolo));
 
                 texto.setCharacterSize(FONT_SIZE);
 
                 texto.setPosition(
-                    sf::Vector2f(j * FONT_SIZE,
-                                 i * FONT_SIZE)
+                    sf::Vector2f(
+                        j * FONT_SIZE,
+                        i * FONT_SIZE
+                    )
                 );
 
                 texto.setFillColor(sf::Color::White);

@@ -1,24 +1,13 @@
-#ifndef MAP_RENDERER_H
-#define MAP_RENDERER_H
+#ifndef MAPRENDERER_H
+#define MAPRENDERER_H
 
-#include <vector>
-#include <string>
+#include "core/Tablero.h"
 
 class MapRenderer
 {
-private:
-    std::vector<std::string> mapa;
-
 public:
-    bool cargarMapa(const std::string& nombreArchivo);
 
-    std::vector<std::string> obtenerMapa() const;
-
-    int obtenerFilas() const;
-
-    int obtenerColumnas() const;
-
-    void mostrarMapa();
+    void render(Tablero& tablero);
 };
 
 #endif
