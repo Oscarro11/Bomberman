@@ -18,8 +18,8 @@ void MapRenderer::render(Tablero& tablero)
 
     const int FONT_SIZE = 32;
 
-    int filas = tablero.getFilas();
-    int columnas = tablero.getColumnas();
+    int filas = tablero.getRows();
+    int columnas = tablero.getColumns();
 
     sf::RenderWindow window(
         sf::VideoMode(
