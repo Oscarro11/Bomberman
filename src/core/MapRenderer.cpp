@@ -53,7 +53,7 @@ void MapRenderer::mostrarMapa()
 {
     sf::Font font;
 
-    if (!font.openFromFile("assets/fonts/consola.ttf"))
+    if (!font.loadFromFile("assets/fonts/consola.ttf"))
     {
         cout << "No se pudo cargar la fuente\n";
         return;
@@ -66,17 +66,18 @@ void MapRenderer::mostrarMapa()
 
     sf::RenderWindow window(
         sf::VideoMode(
-            sf::Vector2u(columnas * FONT_SIZE,
-                         filas * FONT_SIZE)
+            columnas * FONT_SIZE,
+            filas * FONT_SIZE
         ),
         "Bomberman"
     );
 
     while (window.isOpen())
     {
-        while (auto event = window.pollEvent())
+        sf::Event event;
+        while (window.pollEvent(event))
         {
-            if (event->is<sf::Event::Closed>())
+            if (event.type == sf::Event::Closed)
             {
                 window.close();
             }
@@ -88,7 +89,8 @@ void MapRenderer::mostrarMapa()
         {
             for (int j = 0; j < columnas; j++)
             {
-                sf::Text texto(font);
+                sf::Text texto;
+                texto.setFont(font);
 
                 texto.setString(string(1, mapa[i][j]));
 
