@@ -3,7 +3,11 @@
 
 int main()
 {
-    mostrarMapa("assets/mapas/mapa.txt");
+    Tablero tablero("assets/mapas/mapa.txt");
+
+    MapRenderer renderer;
+
+    renderer.render(tablero);
 
     return 0;
 }
