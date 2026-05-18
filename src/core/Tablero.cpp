@@ -21,7 +21,7 @@ Tablero::Tablero(string source)
     {
         vector<int> fila;
 
-        for (int i = 0; i < linea.size(); i++)
+        for (size_t i = 0; i < linea.size(); i++)
         {
             char c = linea[i];
 

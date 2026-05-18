@@ -1,4 +1,5 @@
-#include "MapRenderer.h"
+#include "core/MapRenderer.h"
+#include "core/Tablero.h"
 
 int main()
 {
