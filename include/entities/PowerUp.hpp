@@ -9,9 +9,9 @@ enum PowerUpType{
 class PowerUp
 {
     private:
-        PowerUpType tipo;
-        int posX;
-        int posY;    
+        PowerUpType tipo_;
+        int posX_;
+        int posY_;    
 
     public:
         PowerUp(PowerUpType tipo, int posX, int posY);
