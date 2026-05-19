@@ -17,8 +17,17 @@ include_directories(include)
 # Sources
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
-# Ejecutable
-add_executable(bomberman ${SRC_FILES})
+# Library
+add_library(core ${SRC_FILES})
+target_include_directories(core PUBLIC include)
+
+# Main app
+add_executable(bomberman src/core/main.cpp)
+target_link_libraries(bomberman core sfml-graphics sfml-window sfml-system Threads::Threads)
+
+# Test
+add_executable(PlayerTest tests/PlayerTest.cpp)
+target_link_libraries(PlayerTest core)
 
 # Linkeo
 target_link_libraries(bomberman
