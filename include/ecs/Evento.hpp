@@ -40,15 +40,13 @@ class Evento
         static Evento playerDeath(int autorId, int playerId, unsigned int posX, unsigned int posY);
         static Evento playerPickPowerUp(int autorId, int powerUpId, unsigned int posX, unsigned int posY, int powerUpTipo);
         
-        /*
-        static Evento bombExplode(int bombId, unsigned int posX, unsigned int posY, int radio);
+        static Evento bombExplode(int bombId, unsigned int posX, unsigned int posY, unsigned int radio);
         static Evento chainExplosion(int bombId);
         static Evento enemyMove(int enemyId, int dx, int dy);
         static Evento enemyDeath(int enemyId, unsigned int posX, unsigned int posY);
         static Evento tileDestroyed(int posX, int posY);
         static Evento gameOver();
-        static Evento roundStart(); 
-        */
+        static Evento roundStart();
 
         //Development method, must be removed for production
         static Evento manualEvent(EventType tipo, int autor, int objetivo, int posicionX, int posicionY, EventData data);

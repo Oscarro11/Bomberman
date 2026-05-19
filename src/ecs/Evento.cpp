@@ -42,12 +42,41 @@ Evento Evento::manualEvent(EventType tipo, int autor, int objetivo, int posicion
     return Evento(tipo, autor, objetivo, posicionX, posicionY, data);
 } 
 
-/*
- Evento Evento::bombExplode(int bombId, unsigned int posX, unsigned int posY, int radio){}
- Evento Evento::chainExplosion(int bombId){}
- Evento Evento::enemyMove(int enemyId, int dx, int dy){}
- Evento Evento::enemyDeath(int enemyId, unsigned int posX, unsigned int posY){}
- Evento Evento::tileDestroyed(int posX, int posY){}
- Evento Evento::gameOver(){}
- Evento Evento::roundStart(){}
- */
+Evento Evento::bombExplode(int bombId, unsigned int posX, unsigned int posY, unsigned int radio)
+{
+    EventData data;
+    data.explosion = {radio};
+
+    return Evento(EventType::BombExplode, bombId, -1, posX, posY, data);
+}
+
+Evento Evento::chainExplosion(int bombId)
+{
+    return Evento(EventType::ChainExplosion, bombId, -1, -1, -1, {});
+}
+
+Evento Evento::enemyMove(int enemyId, int dx, int dy)
+{
+    EventData data;
+    data.mover = {dx, dy};
+
+    return Evento(EventType::EnemyMove, enemyId, -1, -1, -1, data);
+}
+
+Evento Evento::enemyDeath(int enemyId, unsigned int posX, unsigned int posY)
+{
+    return Evento(EventType::EnemyDeath, enemyId, -1, posX, posY, {});
+}
+Evento Evento::tileDestroyed(int posX, int posY)
+{
+    return Evento(EventType::TileDestroyed, -1, -1, posX, posY, {});
+}
+Evento Evento::gameOver()
+{
+    return Evento(EventType::GameOver, -1, -1, -1, -1, {});
+}
+Evento Evento::roundStart()
+{
+    return Evento(EventType::RoundStart, -1, -1, -1, -1, {});
+}
+
