@@ -43,14 +43,14 @@ void Vista::handleEvent(const sf::Event& event) {
             // Change value of selected attribute
             if (event.key.code == sf::Keyboard::W) {
                 auto& p = players_[activePlayer_];
-                if (selectedAttr_ == 0) p.maxBombas       = std::min(p.maxBombas + 1,       8);
-                if (selectedAttr_ == 1) p.rangoExplosion  = std::min(p.rangoExplosion + 1,  6);
+                if (selectedAttr_ == 0) p.maxBombas       = std::min(p.maxBombas + 1,       (unsigned) 8);
+                if (selectedAttr_ == 1) p.rangoExplosion  = std::min(p.rangoExplosion + 1,  (unsigned) 6);
                 if (selectedAttr_ == 2) p.velocidad       = std::min(p.velocidad + 1.0,     5.0);
             }
             if (event.key.code == sf::Keyboard::S) {
                 auto& p = players_[activePlayer_];
-                if (selectedAttr_ == 0) p.maxBombas       = std::max(p.maxBombas - 1,       1);
-                if (selectedAttr_ == 1) p.rangoExplosion  = std::max(p.rangoExplosion - 1,  1);
+                if (selectedAttr_ == 0) p.maxBombas       = std::max(p.maxBombas - 1,       (unsigned) 1);
+                if (selectedAttr_ == 1) p.rangoExplosion  = std::max(p.rangoExplosion - 1,  (unsigned) 1);
                 if (selectedAttr_ == 2) p.velocidad       = std::max(p.velocidad - 1.0,     1.0);
             }
             if (event.key.code == sf::Keyboard::Add) {
@@ -69,6 +69,11 @@ void Vista::handleEvent(const sf::Event& event) {
                 currentScreen_ = MenuScreen::Main;
             break;
     }
+}
+
+void Vista::clear() {
+    window_.clear();
+    window_.display();
 }
 
 void Vista::render() {

@@ -15,15 +15,18 @@ static constexpr int MARGIN = 40;   // left/top margin
 static const int MAX_PLAYERS = 4;
 static const int MIN_PLAYERS = 2;
 
+//Las diferentes pantallas a usar en el juego, exceptuando la principal
 enum class MenuScreen {
     Main,
     SinglePlayer,
     MultiPlayer
 };
 
+//Se usa en los menus para configurar los stats iniciales de cada jugador
 struct PlayerConfig {
-    int  maxBombas      = 3;
-    int  rangoExplosion = 3;
+    unsigned int vida            = 3;
+    unsigned int maxBombas       = 3;
+    unsigned int  rangoExplosion = 3;
     double velocidad    = 3.0;
     bool isSelected     = false;   // currently active player slot
 };
@@ -38,16 +41,18 @@ class Vista {
         {};
 
         void handleEvent(const sf::Event& event);
+        void clear();
         void render();
 
         //When used, if the game start button is used, it should handle control to Engine
         bool shouldStartGame() const { return startGame_; }
+        std::vector<PlayerConfig> get_players_info() const {return players_;};
 
     private:
         sf::RenderWindow& window_;
         sf::Font&         font_;
         MenuScreen        currentScreen_ = MenuScreen::Main;
-        int               selectedOption_ = 0;   // which option is highlighted
+        int               selectedOption_ = 0;   // which option in a menu should be highlighted
         bool              startGame_      = false;
 
         //Helper functions, used in the construction of all 3 screens
