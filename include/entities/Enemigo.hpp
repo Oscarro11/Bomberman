@@ -1,5 +1,4 @@
-#ifndef ENEMIGO_H
-#define ENEMIGO_H
+#pragma once
 
 class Enemigo
 {
@@ -23,5 +22,3 @@ public:
 
     int getY();
 };
-
-#endif

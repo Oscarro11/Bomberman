@@ -1,5 +1,4 @@
-#ifndef BOMBA_H
-#define BOMBA_H
+#pragma once
 
 #include <SFML/System.hpp>
 
@@ -25,5 +24,3 @@ public:
 
     int getY();
 };
-
-#endif
