@@ -1,9 +1,9 @@
-#include "systems/Vista.hpp"
+#include "rendering/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Bomberman");
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
     sf::Font font;
     font.loadFromFile("assets/fonts/consola.ttf");
 
@@ -21,6 +21,7 @@ int main() {
         vista.render();
     }
 
+    /*
     // Hand off to game loop
     if (vista.shouldStartGame()) {
         std::vector<PlayerInfo> playerInfo;
@@ -58,6 +59,7 @@ int main() {
             
         }
     }
+    */
 
     return 0;
 }
