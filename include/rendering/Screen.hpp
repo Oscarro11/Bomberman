@@ -13,7 +13,8 @@ class Screen {
         virtual Screen* handleInput(sf::Keyboard::Key key) = 0;
         virtual void render(sf::RenderWindow& window, const sf::Font& font) const = 0;
 
-        //TODO: add specific constants for Screen changes instead of nullptr
-        //static Screen* STAY;
-        //static Screen* START_GAME;
+        inline static Screen* STAY = nullptr;
+        
+        //TODO: fill with screen for Engine
+        //inline static Screen* START_GAME = ;
 };

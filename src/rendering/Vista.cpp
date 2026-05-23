@@ -8,7 +8,6 @@ Vista::Vista(sf::RenderWindow& window, sf::Font& font)
     , font_(font)
     , currentScreen_(new MainMenuScreen)
 {
-    ScreenUtils::setCharSize(window);
 }
 
 Vista::~Vista() {

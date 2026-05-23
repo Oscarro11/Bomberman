@@ -1,11 +1,15 @@
 #include "rendering/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
+#include "utils/ScreenUtils.hpp"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
     sf::Font font;
     font.loadFromFile("assets/fonts/consola.ttf");
+    
+    ScreenUtils::setCharSize(window);
+    ScreenUtils::measureFont(font);
 
     Vista vista(window, font);
     sf::Clock clock;

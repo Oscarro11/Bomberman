@@ -9,7 +9,7 @@ Screen* GameScreen::handleInput(sf::Keyboard::Key key) {
     if (key == sf::Keyboard::Escape || key == sf::Keyboard::Return)
         return new MainMenuScreen;
     
-    return nullptr;
+    return Screen::STAY;
 }
 
 void GameScreen::render(sf::RenderWindow& window, const sf::Font& font) const {
