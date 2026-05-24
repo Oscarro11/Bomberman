@@ -61,7 +61,7 @@ Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
         // --- Confirm ---
         case sf::Keyboard::Return:
             if (selectedOption_ == 0)
-                //return Screen::START_GAME;    // → launches Engine
+                return new StartScreen;    // → launches Engine
             if (selectedOption_ == 1)
                 return new MainMenuScreen();  // → back to main
 
@@ -161,13 +161,13 @@ void MultiplayerConfigurationScreen::drawPlayerCard(sf::RenderWindow& window,
     drawLineAt(window, font, " +----------------+", row++, startCol, COL_BORDER);
 
     // Attribute lines — mixed color per segment
-    drawAttrLine(window, font, "Bombas", cfg.maxBombas,
+    drawAttrLine(window, font, "Bombas", cfg.stats.maxBombas,
                  cfg.isSelected, selectedAttr == 0,
                  row++, startCol);
-    drawAttrLine(window, font, "Rango ", cfg.rangoExplosion,
+    drawAttrLine(window, font, "Rango ", cfg.stats.rangoExplosion,
                  cfg.isSelected, selectedAttr == 1,
                  row++, startCol);
-    drawAttrLine(window, font, "Vel   ", (int)cfg.velocidad,
+    drawAttrLine(window, font, "Vel   ", (int)cfg.stats.velocidad,
                  cfg.isSelected, selectedAttr == 2,
                  row++, startCol);
 
@@ -211,16 +211,16 @@ void MultiplayerConfigurationScreen::syncSelectedFlags() {
 
 void MultiplayerConfigurationScreen::incrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.maxBombas      = std::min(p.maxBombas + 1,      (unsigned int) MAX_BOMBAS);  break;
-        case 1: p.rangoExplosion = std::min(p.rangoExplosion + 1,  (unsigned int) MAX_RANGO);  break;
-        case 2: p.velocidad      = std::min(p.velocidad + 1.0,     MAX_VEL);    break;
+        case 0: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      (unsigned int) MAX_BOMBAS);  break;
+        case 1: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  (unsigned int) MAX_RANGO);  break;
+        case 2: p.stats.velocidad      = std::min(p.stats.velocidad + 1.0,     MAX_VEL);    break;
     }
 }
 
 void MultiplayerConfigurationScreen::decrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.maxBombas      = std::max(p.maxBombas - 1,      (unsigned int) MIN_BOMBAS); break;
-        case 1: p.rangoExplosion = std::max(p.rangoExplosion - 1, (unsigned int) MIN_RANGO); break;
-        case 2: p.velocidad      = std::max(p.velocidad - 1.0,    MIN_VEL);   break;
+        case 0: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      (unsigned int) MIN_BOMBAS); break;
+        case 1: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, (unsigned int) MIN_RANGO); break;
+        case 2: p.stats.velocidad      = std::max(p.stats.velocidad - 1.0,    MIN_VEL);   break;
     }
 }

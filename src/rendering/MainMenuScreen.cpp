@@ -7,16 +7,6 @@
 #include "core/Engine.hpp"
 //#include "rendering/MultiplayerScreen.hpp"
 
-Screen *EmptyScreen::handleInput(sf::Keyboard::Key key)
-{
-    return Screen::STAY;
-}
-
-void EmptyScreen::render(sf::RenderWindow &window, const sf::Font &font) const
-{
-
-}
-
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
 {
     if (key == sf::Keyboard::W)
@@ -40,7 +30,7 @@ Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
             
         //if (selectedOption_ == 2) return new InstructionsScreen;     //One player mode
         if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;    //Multi player mode, just a preview
-        if (selectedOption_ == 4) return new EmptyScreen;   // quit handled by Vista
+        if (selectedOption_ == 4) return new ExitScreen;   // quit handled by Vista
     }
     
     return Screen::STAY;   // stay on this screen

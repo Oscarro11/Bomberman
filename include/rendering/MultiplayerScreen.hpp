@@ -2,15 +2,7 @@
 
 #include "rendering/Screen.hpp"
 #include "rendering/Vista.hpp"
-
-//Se usa en los menus para configurar los stats iniciales de cada jugador
-struct PlayerConfig {
-    unsigned int vida            = 3;
-    unsigned int maxBombas       = 3;
-    unsigned int  rangoExplosion = 3;
-    double velocidad    = 3.0;
-    bool isSelected     = false;   // currently active player slot
-};
+#include "ecs/PlayerStats.hpp"
 
 class MultiplayerConfigurationScreen : public Screen {
     public:

@@ -5,7 +5,9 @@
 
 Tablero::Tablero(string source)
 {
-    ifstream archivo(source);
+    //This should be changed, to take into account source
+    //ifstream archivo(source);
+    ifstream archivo("/home/oscar/bomberman/assets/mapas/mapa.txt");
 
     if (!archivo.is_open())
     {
