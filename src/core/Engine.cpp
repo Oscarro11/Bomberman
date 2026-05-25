@@ -190,8 +190,63 @@ void Engine::onPlayerMove(Evento &evento)
 {
     Player& player = jugadores_[evento.autor()];
 
-    //Pendiente de implementarse
-    printf("El jugador con id %i se movera segun los siguientes cambios: %i, %i\n", player.id(), evento.data().mover.dx, evento.data().mover.dy);
+    int dx = evento.data().mover.dx;
+    int dy = evento.data().mover.dy;
+
+    int oldX = player.x();
+    int oldY = player.y();
+
+    int newX = oldX + dx;
+    int newY = oldY + dy;
+
+    // Limites del tablero
+    if (newX < 0 || newY < 0 ||
+        newX >= tablero_.getWidth() ||
+        newY >= tablero_.getHeight())
+    {
+        return;
+    }
+
+    CellContent destino = tablero_.getCell({newX, newY});
+
+    // Colisiones
+    switch (destino.type)
+    {
+        case Wall:
+        case DestructibleWall:
+        case Bomb:
+            return;
+
+        default:
+            break;
+    }
+
+    // Liberar celda anterior
+    tablero_.setCell(
+        Floor,
+        -1,
+        {oldX, oldY}
+    );
+
+    // Actualizar posicion
+    player.setPosition(newX, newY);
+
+    // Actualizar tablero
+    BoardElement tipoJugador =
+        static_cast<BoardElement>(Player1 + player.id());
+
+    tablero_.setCell(
+        tipoJugador,
+        player.id(),
+        {newX, newY}
+    );
+
+    printf(
+        "Jugador %i se movio a (%i, %i)\n",
+        player.id(),
+        newX,
+        newY
+    );
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)

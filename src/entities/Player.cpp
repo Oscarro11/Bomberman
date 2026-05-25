@@ -30,10 +30,10 @@ std::optional<Evento> Player::recibirDanio(const Personaje& atacante)
 Evento Player::generarEventoMov(Directions direction){
     switch (direction)
     {
-        case Directions::UP : return Evento::playerMove(id_, posX_, posY_, 0, 1);
-        case Directions::DOWN : return Evento::playerMove(id_, posX_, posY_, 0, -1);
-        case Directions::LEFT : return Evento::playerMove(id_, posX_, posY_, 1, 0);
-        case Directions::RIGHT : return Evento::playerMove(id_, posX_, posY_, -1, 0);
+        case Directions::UP : return Evento::playerMove(id_, posX_, posY_, 0, -1);
+        case Directions::DOWN : return Evento::playerMove(id_, posX_, posY_, 0, 1);
+        case Directions::LEFT : return Evento::playerMove(id_, posX_, posY_, -1, 0);
+        case Directions::RIGHT : return Evento::playerMove(id_, posX_, posY_, 1, 0);
         default : return Evento::playerMove(id_, posX_, posY_, 0, 0);
     }
 }
@@ -47,9 +47,15 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
 {
     switch (tipo)
     {
-        case maxBomb: this -> maxBombas_ += cantidad;
-        case explosionRange: this -> rangoExplosion_ += cantidad;
-        case speed: this -> velocidad_ += cantidad;
+        case maxBomb: 
+            this -> maxBombas_ += cantidad;
+            break;
+        case explosionRange: 
+            this -> rangoExplosion_ += cantidad;
+            break;
+        case speed: 
+            this -> velocidad_ += cantidad;
+            break;
         default: break;
     }
 }
