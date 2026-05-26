@@ -1,8 +1,9 @@
 #include "core/Engine.hpp"
+#include "ecs/PlayerStats.hpp"
 
 std::vector<Player> Engine::jugadores_;
 
-Engine::Engine(std::string tableroSource, std::vector<PlayerStats> jugadores)
+Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
     : inputHandler_(this)
     , tablero_(tableroSource)
 {
@@ -14,9 +15,9 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats> jugadores)
     
     for (int i=0; i < jugadores.size(); i++)
     {
-        PlayerStats info = jugadores.at(i);
+        PlayerStats* info = jugadores.at(i);
 
-        Player player = Player(i, 3, info.maxBombas, info.velocidad, playersSpawn[i].spawnPoint.x, playersSpawn[i].spawnPoint.y);
+        Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].spawnPoint.x, playersSpawn[i].spawnPoint.y);
         this -> jugadores_.push_back(player);
 
         //Se crea un hilo por cada jugador

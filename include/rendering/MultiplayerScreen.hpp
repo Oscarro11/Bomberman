@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rendering/Screen.hpp"
-#include "rendering/Vista.hpp"
+#include "utils/GameConstants.hpp"
 #include "ecs/PlayerStats.hpp"
 
 class MultiplayerConfigurationScreen : public Screen {
@@ -12,7 +12,7 @@ class MultiplayerConfigurationScreen : public Screen {
         void render(sf::RenderWindow& window, const sf::Font& font) const override;
 
         // Vista reads this when transitioning to the game
-        std::vector<PlayerConfig> getPlayerConfigs() const { return players_; }
+        std::vector<const PlayerConfig*> getPlayerConfigs() const;
 
     private:
         static constexpr int NUM_ATTRS  = 3;

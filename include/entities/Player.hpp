@@ -1,6 +1,11 @@
 #pragma once
+
+#include <optional>
+
 #include "entities/Personaje.hpp"
-#include "entities/PowerUp.hpp"
+
+//Forward declaration
+enum PowerUpType : int;
 
 class Player : public Personaje
 {

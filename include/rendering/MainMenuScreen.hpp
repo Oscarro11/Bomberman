@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+
 #include "rendering/Screen.hpp"
 
 class MainMenuScreen : public Screen {

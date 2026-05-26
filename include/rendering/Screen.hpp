@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <SFML/Graphics.hpp> 
-#include <utils/ScreenUtils.hpp>
+
+#include "utils/ScreenUtils.hpp"
 
 //Abstract class to manage screen rendering for various menus
 class Screen {

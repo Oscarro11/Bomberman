@@ -48,13 +48,20 @@ void Vista::render() {
     }
 }
 
-std::vector<PlayerStats> Vista::getPlayerStats() const
+std::vector<PlayerStats*> Vista::getPlayerStats() const
 {
-    std::vector<PlayerStats> info;
+    std::vector<PlayerStats*> info;
 
-    for (PlayerConfig config : dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) -> getPlayerConfigs())
+    for (const PlayerConfig* config :
+         dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_)->getPlayerConfigs())
     {
-        info.push_back(PlayerStats{config.stats.maxBombas, config.stats.rangoExplosion, config.stats.velocidad});
+        info.push_back(
+            new PlayerStats{
+                config->stats.maxBombas,
+                config->stats.rangoExplosion,
+                config->stats.velocidad
+            }
+        );
     }
 
     return info;

@@ -1,6 +1,9 @@
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/MultiplayerScreen.hpp"
 
+#include "utils/GameConstants.hpp"
+#include "ecs/PlayerStats.hpp"
+
 MultiplayerConfigurationScreen::MultiplayerConfigurationScreen()
 {
     syncSelectedFlags();
@@ -127,13 +130,26 @@ void MultiplayerConfigurationScreen::render(sf::RenderWindow& window,
     }, row);
 }
 
-void MultiplayerConfigurationScreen::drawPlayerCard(sf::RenderWindow& window,
-                                   const sf::Font& font,
-                                   int playerNum,
-                                   const PlayerConfig& cfg,
-                                   int selectedAttr,
-                                   int startRow,
-                                   int startCol) const {
+std::vector<const PlayerConfig*> MultiplayerConfigurationScreen::getPlayerConfigs() const
+{
+    std::vector<const PlayerConfig*> result;
+
+    for (const PlayerConfig& config : players_)
+    {
+        result.push_back(&config);
+    }
+
+    return result;
+}
+
+void MultiplayerConfigurationScreen::drawPlayerCard(sf::RenderWindow &window,
+                                                    const sf::Font &font,
+                                                    int playerNum,
+                                                    const PlayerConfig &cfg,
+                                                    int selectedAttr,
+                                                    int startRow,
+                                                    int startCol) const
+{
     using namespace ScreenUtils;
 
     sf::Color headerColor  = cfg.isSelected ? COL_SELECTED : COL_DEFAULT;

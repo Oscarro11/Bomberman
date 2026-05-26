@@ -1,4 +1,5 @@
 #include "rendering/InstructionsScreen.hpp"
+#include "rendering/MainMenuScreen.hpp"
 
 using namespace ScreenUtils;
 

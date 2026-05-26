@@ -7,12 +7,13 @@
 #include <pthread.h>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
-#include "ecs/Evento.hpp"
-#include "ecs/PlayerStats.hpp"
-#include "entities/Player.hpp"
+
 #include "core/IEngine.hpp"
-#include "input/InputHandler.hpp"
 #include "entities/Tablero.hpp"
+#include "entities/Player.hpp"
+#include "input/InputHandler.hpp"
+
+struct PlayerStats;
 
 class Engine : public IEngine
 {
@@ -21,6 +22,13 @@ class Engine : public IEngine
         Tablero tablero_;
         static std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
+
+        /*
+        vector<Player> listaPlayers;
+        vector<Enemigo> listaEnemigos;
+        vector<Bomba> listaBombas;
+        vector<PowerUp> listaPowerUps;
+        */
 
         pthread_t logicThread_;
 
@@ -47,7 +55,7 @@ class Engine : public IEngine
         void onPlayerMove(Evento& evento);
 
     public:
-        Engine(std::string tableroSource, std::vector<PlayerStats> jugadores);
+        Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores);
         virtual ~Engine();
 
         int numPlayers() const override{return jugadores_.size();}

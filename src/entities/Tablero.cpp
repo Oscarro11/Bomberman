@@ -3,26 +3,26 @@
 #include <fstream>
 #include <iostream>
 
-Tablero::Tablero(string source)
+Tablero::Tablero(std::string source)
 {
     //This should be changed, to take into account source
     //ifstream archivo(source);
-    ifstream archivo("/home/oscar/bomberman/assets/mapas/mapa.txt");
+    std::ifstream archivo("/home/oscar/bomberman/assets/mapas/mapa.txt");
 
     if (!archivo.is_open())
     {
-        cout << "No se pudo abrir el mapa\n";
+        std::cout << "No se pudo abrir el mapa\n";
         return;
     }
 
     //pthread_mutex_init(&boardAccessMutex, NULL);
 
-    string linea;
+    std::string linea;
     int y = 0;
 
     while (getline(archivo, linea))
     {
-        vector<CellContent> fila;
+        std::vector<CellContent> fila;
 
         for (int i = 0; i < linea.size(); i++)
         {
@@ -64,19 +64,19 @@ Tablero::Tablero(string source)
                     break;
 
                 case '#':
-                    fila.push_back(CellContent{Wall, nullopt});
+                    fila.push_back(CellContent{Wall, std::nullopt});
                     break;
 
                 case '+':
-                    fila.push_back(CellContent{DestructibleWall, nullopt});
+                    fila.push_back(CellContent{DestructibleWall, std::nullopt});
                     break;
 
                 case '/':
-                    fila.push_back(CellContent{Hole, nullopt});
+                    fila.push_back(CellContent{Hole, std::nullopt});
                     break;
 
                 case '.':
-                    fila.push_back(CellContent{Floor, nullopt});
+                    fila.push_back(CellContent{Floor, std::nullopt});
                     break;
 
                 case '?':
@@ -88,7 +88,7 @@ Tablero::Tablero(string source)
                 }
 
                 default:
-                    fila.push_back(CellContent{Floor, nullopt});
+                    fila.push_back(CellContent{Floor, std::nullopt});
                     break;
             }
         }
@@ -153,7 +153,7 @@ int Tablero::getHeight()
     //pthread_mutex_unlock(&boardAccessMutex);
 }
 
-vector<vector<CellContent>> Tablero::getBoard()
+std::vector<std::vector<CellContent>> Tablero::getBoard()
 {
     //pthread_mutex_lock(&boardAccessMutex);
     return tablero;

@@ -4,9 +4,6 @@
 #include "rendering/MultiplayerScreen.hpp"
 #include "rendering/GameScreen.hpp"
 
-#include "core/Engine.hpp"
-//#include "rendering/MultiplayerScreen.hpp"
-
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
 {
     if (key == sf::Keyboard::W)
