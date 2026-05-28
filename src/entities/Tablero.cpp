@@ -1,161 +1,146 @@
 #include "entities/Tablero.hpp"
+#include "utils/GameConstants.hpp"
+#include "utils/AssetsUtils.hpp"
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
+#include <algorithm>
 
-Tablero::Tablero(std::string source)
+Tablero::Tablero(const std::string& source)
 {
-    //This should be changed, to take into account source
-    //ifstream archivo(source);
-    std::ifstream archivo("/home/oscar/bomberman/assets/mapas/mapa.txt");
+    loadMap(source);
+}
 
-    if (!archivo.is_open())
+void Tablero::loadMap(const std::string& source)
+{
+    std::filesystem::path path = AssetPaths::MAPS / source;
+    std::ifstream file(path);
+
+    if (!file)
     {
-        std::cout << "No se pudo abrir el mapa\n";
-        return;
+        throw std::runtime_error(
+            "Could not open map file: " + source
+        );
     }
 
-    //pthread_mutex_init(&boardAccessMutex, NULL);
+    std::string line;
 
-    std::string linea;
-    int y = 0;
+    unsigned int y = 0;
 
-    while (getline(archivo, linea))
+    while (std::getline(file, line))
     {
-        std::vector<CellContent> fila;
+        std::vector<BoardCell> row;
 
-        for (int i = 0; i < linea.size(); i++)
+        for (unsigned int x = 0; x < line.size(); ++x)
         {
-            char c = linea[i];
+            BoardCell cell;
 
-            switch(c)
+            char c = line[x];
+
+            switch (c)
             {
+                case '#': cell.terrainType = TileType::Wall;        break;
+                case '+': cell.terrainType = TileType::Breakable;   break;
+                case '/': cell.terrainType = TileType::Hole;        break;
+                case '.': cell.terrainType = TileType::Floor;       break;
+
                 case '@':
-                {
-                    listaSpawnPlayers[0] = CellSpawn{Cell{i, y}, 11};
-                    fila.push_back(CellContent{Player1, 11});
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPlayers_[0] = SpawnPoint{Position{x, y}, 1};
                     break;
-                }
 
                 case '$':
-                {
-                    listaSpawnPlayers[1] = CellSpawn{Cell{i, y}, 12};
-                    fila.push_back(CellContent{Player2, 12});
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPlayers_[1] = SpawnPoint{Position{x, y}, 2};
                     break;
-                }
 
                 case '1':
-                {
-                    listaSpawnEnemies.push_back(CellSpawn{Cell{i, y}, 21 + (int) listaSpawnEnemies.size()});
-                    fila.push_back(CellContent{Enemy, 20 + listaSpawnEnemies.size()});
-                    break;
-                }
-
-                //This case shouldnt exist, as no bombs are preloaded
-                case '!':
-                {
-                    fila.push_back(CellContent{Bomb, 30});
-                    break;
-                }
-
-                //This case shouldnt exist, as no explosions are preloaded
-                case '0':
-                    fila.push_back(CellContent{Explosion, 40});
-                    break;
-
-                case '#':
-                    fila.push_back(CellContent{Wall, std::nullopt});
-                    break;
-
-                case '+':
-                    fila.push_back(CellContent{DestructibleWall, std::nullopt});
-                    break;
-
-                case '/':
-                    fila.push_back(CellContent{Hole, std::nullopt});
-                    break;
-
-                case '.':
-                    fila.push_back(CellContent{Floor, std::nullopt});
-                    break;
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnEnemies_.push_back(Position{x, y});
 
                 case '?':
-                {
-                    listaSpawnPowerUps.push_back(CellSpawn{Cell{i, y}, 81 + (int) listaSpawnPowerUps.size()});
-                    fila.push_back(CellContent{PowerUpItem, 80 + listaSpawnPowerUps.size()});
-
-                    break;
-                }
-
-                default:
-                    fila.push_back(CellContent{Floor, std::nullopt});
-                    break;
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPowerUps_.push_back(Position{x, y});
             }
+
+            row.push_back(cell);
         }
 
-        tablero.push_back(fila);
+        matrix_.push_back(row);
+
+        ++y;
     }
-
-    archivo.close();
 }
 
-Tablero::~Tablero()
-{
-    //pthread_mutex_destroy(&boardAccessMutex);
-}
-
-CellContent Tablero::getCell(Cell cell)
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero[cell.y][cell.x];
-    ////pthread_mutex_unlock(&boardAccessMutex);
-}
-
-void Tablero::setCell(BoardElement type, int id, Cell cell)
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    tablero[cell.y][cell.x] = CellContent{type, id};
-    //pthread_mutex_unlock(&boardAccessMutex);
-}
-
-std::array<CellSpawn, 4> Tablero::getPlayersSpawn()
-{
-    return listaSpawnPlayers;
-};
-
-std::vector<CellSpawn> Tablero::getEnemiesSpawn()
-{
-    return listaSpawnEnemies;
-}
-
-std::vector<CellSpawn> Tablero::getPowerUpsSpawn()
-{
-    return listaSpawnPowerUps;
-}
-
-
-int Tablero::getWidth()
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero.size();
-    //pthread_mutex_unlock(&boardAccessMutex);
-}
-
-int Tablero::getHeight()
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    if (tablero.empty())
+bool Tablero::isWalkable(Position p) const {
+    if (matrix_[p.y][p.x].terrainType != TileType::Floor)
+        return false;
+       
+    for (Occupant entity : matrix_[p.y][p.x].occupants)
     {
-        return 0;
+        if (entity.type == EntityType::Player ||
+            entity.type == EntityType::Enemy ||
+            entity.type == EntityType::Bomb)
+            return false;
     }
-
-    return tablero[0].size();
-    //pthread_mutex_unlock(&boardAccessMutex);
+    
+    return true;
 }
 
-std::vector<std::vector<CellContent>> Tablero::getBoard()
+const BoardCell &Tablero::getCell(Position p) const
 {
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero;
-    //pthread_mutex_unlock(&boardAccessMutex);
+    return matrix_[p.y][p.x];
+}
+
+//This method resets the tile in the position parameter
+void Tablero::setTerrain(Position p, TileType terrain)
+{
+    matrix_[p.y][p.x] = BoardCell{terrain, std::vector<Occupant>()};
+}
+
+void Tablero::addOccupant(Position p, const Occupant &occ)
+{
+    matrix_[p.y][p.x].occupants.push_back(occ);
+}
+
+bool Tablero::removeOccupant(Position pos, int id)
+{
+    auto& occupants = matrix_[pos.y][pos.x].occupants;
+    auto it = std::remove_if(
+        occupants.begin(),
+        occupants.end(),
+        [id](const Occupant& occ)
+        { return occ.entityId == id;});
+
+    bool removed = (it != occupants.end());
+    occupants.erase(it, occupants.end());
+
+    return removed;
+}
+
+bool Tablero::moveOccupant(Position from, Position to, int id)
+{
+    auto& fromOcc = matrix_[from.y][from.x].occupants;
+    auto it = std::find_if(
+        fromOcc.begin(),
+        fromOcc.end(),
+        [id](const Occupant& occ)
+        { return occ.entityId == id;});
+
+    if (it == fromOcc.end())
+    {
+        return false;
+    }
+
+    Occupant occ = *it;
+    fromOcc.erase(it);
+
+    matrix_[to.y][to.x].occupants.push_back(occ);
+    return true;
+}
+
+const std::vector<std::vector<BoardCell>>& Tablero::matrix() const
+{
+    return matrix_;
 }

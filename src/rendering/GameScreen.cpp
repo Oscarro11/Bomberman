@@ -1,8 +1,9 @@
 #include "rendering/GameScreen.hpp"
 #include "rendering/MainMenuScreen.hpp"
+#include "utils/GameConstants.hpp"
 
 GameScreen::GameScreen() {
-    this -> tablero_ = new Tablero("/home/oscar/bomberman/assets/mapas/mapa.txt");
+    this -> tablero_ = new Tablero("mapa.txt");
 }
 
 Screen* GameScreen::handleInput(sf::Keyboard::Key key) {
@@ -13,10 +14,12 @@ Screen* GameScreen::handleInput(sf::Keyboard::Key key) {
 }
 
 void GameScreen::render(sf::RenderWindow& window, const sf::Font& font) const {
+    //TODO: this method has to be changed to use RenderSnapshot instead of accesing Tablero itself
+    /*
     int row = -1;
     using namespace ScreenUtils;
 
-    for (const std::vector<CellContent> lista : tablero_ -> getBoard()){
+    for (const std::vector<TileType> lista : tablero_ -> ){
         row++;
         std::vector<TextSegment> segmentos;
 
@@ -52,4 +55,5 @@ void GameScreen::render(sf::RenderWindow& window, const sf::Font& font) const {
     drawLine(window, font, "    Bombas: 3", row + 10, COL_DEFAULT);
     drawLine(window, font, "    Rango: 3", row + 11, COL_DEFAULT);
     drawLine(window, font, "    Velocidad: 3", row + 12, COL_DEFAULT);
+    */
 }

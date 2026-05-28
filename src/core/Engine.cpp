@@ -1,5 +1,6 @@
 #include "core/Engine.hpp"
 #include "ecs/PlayerStats.hpp"
+#include "utils/AssetsUtils.hpp"
 
 std::vector<Player> Engine::jugadores_;
 
@@ -11,13 +12,13 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
 
-    auto playersSpawn = tablero_.getPlayersSpawn();
+    auto playersSpawn = tablero_.getSpawnPlayers();
     
     for (int i=0; i < jugadores.size(); i++)
     {
         PlayerStats* info = jugadores.at(i);
 
-        Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].spawnPoint.x, playersSpawn[i].spawnPoint.y);
+        Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
 
         //Se crea un hilo por cada jugador
@@ -189,13 +190,15 @@ void Engine::procesarEvento(Evento& evento){
 
 void Engine::onPlayerMove(Evento &evento)
 {
+    //TODO: remake this method taking into account new structure of Tablero
+    /*
     Player& player = jugadores_[evento.autor()];
 
     int dx = evento.data().mover.dx;
     int dy = evento.data().mover.dy;
 
-    int oldX = player.x();
-    int oldY = player.y();
+    int oldX = player.posX();
+    int oldY = player();
 
     int newX = oldX + dx;
     int newY = oldY + dy;
@@ -248,6 +251,7 @@ void Engine::onPlayerMove(Evento &evento)
         newX,
         newY
     );
+    */
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
@@ -262,5 +266,10 @@ void Engine::handleInput(sf::Keyboard::Key key, int playerId)
     else if (key == km.down)  pushEvento(p.generarEventoMov(Directions::DOWN));
     else if (key == km.left)  pushEvento(p.generarEventoMov(Directions::LEFT));
     else if (key == km.right) pushEvento(p.generarEventoMov(Directions::RIGHT));
-    else if (key == km.bomb)  pushEvento(p.colocarBomba());
+    else if (key == km.bomb){
+        std::optional<Evento> evento = p.colocarBomba();
+        
+        if (evento.has_value())
+            pushEvento(evento.value());
+    }
 }

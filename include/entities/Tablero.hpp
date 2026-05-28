@@ -3,73 +3,76 @@
 #include <vector>
 #include <string>
 #include <array>
-#include <optional>
 #include <pthread.h>
 
-//TODO: reorganize enums and constructs to divide terrain and entities
-enum BoardElement {
-    Player1,
-    Player2,
-    Player3,
-    Player4,
-    Enemy,
-    Bomb,
-    Explosion,
-    Wall,
-    DestructibleWall,
-    Hole,
-    Floor,
-    PowerUpItem
+#include "utils/GameConstants.hpp"
+
+struct Position{
+    unsigned int x, y;
+
+    bool operator==(const Position& other) const {
+        return x == other.x && y == other.y;
+    }
 };
 
-struct CellContent{
-    BoardElement type;
-    std::optional<int> id;
+struct Occupant{
+    EntityType type;
+    int entityId;
+
+    bool operator==(const Occupant& other) const {
+        return type == other.type && entityId == other.entityId;
+    }
 };
 
-struct Cell{
-    int x, y;
+struct SpawnPoint{
+    Position position;
+    int entityId;
+
+    bool operator==(const SpawnPoint other) const {
+        return position == other.position && entityId == other.entityId;
+    }
 };
 
-struct CellSpawn{
-    Cell spawnPoint;
-    int id;
+struct BoardCell{
+    TileType terrainType;
+    std::vector<Occupant> occupants;
+
+    bool operator==(const BoardCell& other) const {
+        return terrainType == other.terrainType && occupants == other.occupants;
+    }
 };
 
-class Tablero
-{
-    private:
-        //pthread_mutex_t boardAccessMutex;
-        std::vector<std::vector<CellContent>> tablero;
-
-        std::array<CellSpawn, 4> listaSpawnPlayers;
-        std::vector<CellSpawn> listaSpawnEnemies;
-        std::vector<CellSpawn> listaSpawnPowerUps;
-
-        /*TODO: implement vector that has all cells with certain type 
-        std::array<CellSpawn, 4> listaCellPlayers;
-        std::vector<CellSpawn> listaEnemigos;
-        std::vector<CellSpawn> listaBombas;
-        std::vector<CellSpawn> listaPowerUps;
-        */
-
+class Tablero {
     public:
-        Tablero(std::string source);
-        virtual ~Tablero();
+        explicit Tablero(const std::string& source);
+        void loadMap(const std::string& source);
 
-        CellContent getCell(Cell cell);
+        ~Tablero() = default;
+        bool isWalkable(Position p) const;
 
-        void setCell(BoardElement type, int id, Cell cell);
+        //For testing purposes
+        const std::vector<std::vector<BoardCell>>& matrix() const;
 
-        std::array<CellSpawn, 4> getPlayersSpawn();
-        std::vector<CellSpawn> getEnemiesSpawn();
-        std::vector<CellSpawn> getPowerUpsSpawn();
+        const BoardCell& getCell(Position p) const;
+        void setTerrain(Position p, TileType terrain);
 
-        //std::vector<Cell> setEnemies(std::vector<Enemigo*> enemies);
+        void addOccupant(Position p, const Occupant& occ);
+        bool removeOccupant(Position p, int id);
+        bool moveOccupant(Position from, Position to, int id);
 
-        int getWidth();
+        int getHeight() const {return matrix_.size();};
+        int getWidth() const {return matrix_[0].size();};
 
-        int getHeight();
+        std::array<SpawnPoint, 4> getSpawnPlayers() {return listaSpawnPlayers_;};
+        std::vector<Position> getSpawnEnemies() {return listaSpawnEnemies_;};
+        std::vector<Position> getSpawnPowerUps() {return listaSpawnPowerUps_;};
 
-        std::vector<std::vector<CellContent>> getBoard();
+    private:
+        std::vector<std::vector<BoardCell>> matrix_;
+
+        std::array<SpawnPoint, 4> listaSpawnPlayers_;
+        std::vector<Position> listaSpawnEnemies_;
+        std::vector<Position> listaSpawnPowerUps_;
+
+        //pthread_mutex_t mutex_;
 };

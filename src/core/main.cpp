@@ -30,7 +30,7 @@ int main() {
     if (vista.shouldStartGame()) {
         std::vector<PlayerStats*> playerInfo = vista.getPlayerStats();
 
-        Engine engine("map.txt", playerInfo);
+        Engine engine("mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
 
         while (window.isOpen() && engine.running())
@@ -50,11 +50,12 @@ int main() {
                 }
             }
             
-            if (pressedKeys.size() > 0)
+            if (!pressedKeys.empty())
             {
                 inputHandler.update(pressedKeys);
             }
-            
+
+            sf::sleep(sf::milliseconds(16));
         }
     }
     

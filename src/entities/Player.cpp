@@ -1,11 +1,12 @@
 #include "entities/Player.hpp"
 #include "entities/PowerUp.hpp"
 
-Player::Player(int id, unsigned int vida, unsigned int maxBombas, double velocidad, int spawnPointX, int spawnPointY)
+Player::Player(unsigned int id, unsigned int vida, unsigned int maxBombas, double velocidad, int spawnPointX, int spawnPointY)
 {
     this -> id_ = id;
     this -> vida_ = vida;
     this -> maxBombas_ = maxBombas;
+    this -> restBombas_ = maxBombas;
     this -> velocidad_ = velocidad;
 
     this -> spawnPointX_ = spawnPointX;
@@ -38,9 +39,15 @@ Evento Player::generarEventoMov(Directions direction){
     }
 }
 
-Evento Player::colocarBomba()
+std::optional<Evento> Player::colocarBomba()
 {
-    return Evento::playerPlaceBomb(id_, posX_, posY_);
+    if (restBombas_ > 0)
+    {
+        restBombas_--;
+        return Evento::playerPlaceBomb(id_, posX_, posY_);
+    }
+    
+    return std::nullopt;
 }
 
 void Player::actualizarStat(PowerUpType tipo, int cantidad)
