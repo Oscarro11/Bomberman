@@ -235,7 +235,7 @@ void Engine::onPlayerMove(Evento &evento)
     }
 
     // Actualizar posicion interna del jugador
-    player.setPosition(newPos);
+    player.setPosition(newPos.x, newPos.y);
 
     printf(
         "Jugador %d se movio a (%d, %d)\n",
