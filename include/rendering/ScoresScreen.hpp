@@ -1,8 +1,10 @@
 #pragma once
 
-#include "rendering/Screen.hpp"
 #include <vector>
 #include <string>
+#include <SFML/Graphics.hpp>
+
+#include "rendering/Screen.hpp"
 
 struct ScoreEntry {
     std::string name;

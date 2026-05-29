@@ -1,9 +1,12 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <utils/GameConstants.hpp>
-#include <rendering/Screen.hpp>
-#include <array>
+#include <vector>
+
+#include "utils/GameConstants.hpp"
+#include "ecs/PlayerStats.hpp"
+
+class Screen;
 
 class Vista {
     public:
@@ -13,7 +16,7 @@ class Vista {
         void handleEvent(const sf::Event& event);
         void render();
         bool shouldStartGame() const { return startGame_; }
-        //std::vector<PlayerConfig> getPlayerConfigs() const;
+        std::vector<PlayerStats*> getPlayerStats() const;
 
     private:
         sf::RenderWindow& window_;

@@ -1,54 +1,63 @@
 #include "core/Engine.hpp"
+#include "ecs/PlayerStats.hpp"
+#include "utils/AssetsUtils.hpp"
 
 std::vector<Player> Engine::jugadores_;
 
-Engine::Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores)
+Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
     : inputHandler_(this)
+    , tablero_(tableroSource)
 {
     pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
 
+    auto playersSpawn = tablero_.getSpawnPlayers();
+    
     for (int i=0; i < jugadores.size(); i++)
     {
-        PlayerInfo info = jugadores.at(i);
+        PlayerStats* info = jugadores.at(i);
 
-        //Se crea un hilo por cada jugador
-        Player player = Player(i, info.vida, info.maxBombas, info.velocidad, 0, 0);
+        Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
 
+        //Se crea un hilo por cada jugador
+        /*
         pthread_t thread;
         PlayerThreadArg* arg = new PlayerThreadArg{this, i};
         
         pthread_create(&thread, NULL, player_thread_process, arg);
         threads.push_back(thread);
+        */
     };
+    
 
     //Hilos de procesamiento de eventos y de inputs
     pthread_create(&logicThread_, NULL, logic_thread, (void*) this);
 }
 
-    Engine::~Engine()
+Engine::~Engine()
+{
+    pthread_mutex_lock(&eventMutex_);
+
+    running_ = false;
+
+    pthread_cond_broadcast(&eventReady_);
+
+    pthread_mutex_unlock(&eventMutex_);
+
+    for (const pthread_t& thread : threads)
     {
-        pthread_mutex_lock(&eventMutex_);
-
-        running_ = false;
-
-        pthread_cond_broadcast(&eventReady_);
-
-        pthread_mutex_unlock(&eventMutex_);
-
-        for (const pthread_t& thread : threads)
-        {
-            pthread_join(thread, NULL);
-        }
-
-        pthread_join(logicThread_, NULL);
-
-        pthread_mutex_destroy(&eventMutex_);
-        pthread_mutex_destroy(&inputMutex_);
-        pthread_cond_destroy(&eventReady_);
+        pthread_join(thread, NULL);
     }
+    
+
+    pthread_join(logicThread_, NULL);
+
+    pthread_mutex_destroy(&eventMutex_);
+    pthread_mutex_destroy(&inputMutex_);
+    pthread_cond_destroy(&eventReady_);
+}
 
 bool Engine::running() const
 {
@@ -181,10 +190,68 @@ void Engine::procesarEvento(Evento& evento){
 
 void Engine::onPlayerMove(Evento &evento)
 {
+    //TODO: remake this method taking into account new structure of Tablero
+    /*
     Player& player = jugadores_[evento.autor()];
 
-    //Pendiente de implementarse
-    printf("El jugador con id %i se movera segun los siguientes cambios: %i, %i\n", player.id(), evento.data().mover.dx, evento.data().mover.dy);
+    int dx = evento.data().mover.dx;
+    int dy = evento.data().mover.dy;
+
+    int oldX = player.posX();
+    int oldY = player();
+
+    int newX = oldX + dx;
+    int newY = oldY + dy;
+
+    // Limites del tablero
+    if (newX < 0 || newY < 0 ||
+        newX >= tablero_.getWidth() ||
+        newY >= tablero_.getHeight())
+    {
+        return;
+    }
+
+    CellContent destino = tablero_.getCell({newX, newY});
+
+    // Colisiones
+    switch (destino.type)
+    {
+        case Wall:
+        case DestructibleWall:
+        case Bomb:
+            return;
+
+        default:
+            break;
+    }
+
+    // Liberar celda anterior
+    tablero_.setCell(
+        Floor,
+        -1,
+        {oldX, oldY}
+    );
+
+    // Actualizar posicion
+    player.setPosition(newX, newY);
+
+    // Actualizar tablero
+    BoardElement tipoJugador =
+        static_cast<BoardElement>(Player1 + player.id());
+
+    tablero_.setCell(
+        tipoJugador,
+        player.id(),
+        {newX, newY}
+    );
+
+    printf(
+        "Jugador %i se movio a (%i, %i)\n",
+        player.id(),
+        newX,
+        newY
+    );
+    */
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
@@ -199,5 +266,10 @@ void Engine::handleInput(sf::Keyboard::Key key, int playerId)
     else if (key == km.down)  pushEvento(p.generarEventoMov(Directions::DOWN));
     else if (key == km.left)  pushEvento(p.generarEventoMov(Directions::LEFT));
     else if (key == km.right) pushEvento(p.generarEventoMov(Directions::RIGHT));
-    else if (key == km.bomb)  pushEvento(p.colocarBomba());
+    else if (key == km.bomb){
+        std::optional<Evento> evento = p.colocarBomba();
+        
+        if (evento.has_value())
+            pushEvento(evento.value());
+    }
 }

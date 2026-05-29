@@ -1,11 +1,16 @@
 #include "rendering/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
+#include "utils/ScreenUtils.hpp"
+#include "ecs/PlayerStats.hpp"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
     sf::Font font;
     font.loadFromFile("assets/fonts/consola.ttf");
+    
+    ScreenUtils::setCharSize(window);
+    ScreenUtils::measureFont(font);
 
     Vista vista(window, font);
     sf::Clock clock;
@@ -21,19 +26,12 @@ int main() {
         vista.render();
     }
 
-    /*
     // Hand off to game loop
     if (vista.shouldStartGame()) {
-        std::vector<PlayerInfo> playerInfo;
-        
-        for (PlayerConfig config: vista.get_players_info())
-        {
-            playerInfo.push_back(PlayerInfo{config.vida, config.maxBombas, config.rangoExplosion, config.velocidad});
-        }
+        std::vector<PlayerStats*> playerInfo = vista.getPlayerStats();
 
-        Engine engine("map.txt", playerInfo);
+        Engine engine("mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
-        vista.clear();
 
         while (window.isOpen() && engine.running())
         {
@@ -52,14 +50,15 @@ int main() {
                 }
             }
             
-            if (pressedKeys.size() > 0)
+            if (!pressedKeys.empty())
             {
                 inputHandler.update(pressedKeys);
             }
-            
+
+            sf::sleep(sf::milliseconds(16));
         }
     }
-    */
+    
 
     return 0;
 }
