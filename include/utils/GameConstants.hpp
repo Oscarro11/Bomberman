@@ -19,5 +19,6 @@ enum class EntityType{
     Enemy,
     Bomb,
     Explosion,
-    PowerUpItem
+    PowerUpItem,
+    None
 };

@@ -139,6 +139,14 @@ void runTest(){
 
         {
             { TileType::Wall, {} },
+            { TileType::Floor, {} },
+            { TileType::Floor, {} },
+            { TileType::Floor, {} },
+            { TileType::Wall, {} }
+        },
+
+        {
+            { TileType::Wall, {} },
             { TileType::Wall, {} },
             { TileType::Wall, {} },
             { TileType::Wall, {} },

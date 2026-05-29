@@ -12,6 +12,7 @@
 #include "entities/Tablero.hpp"
 #include "entities/Player.hpp"
 #include "input/InputHandler.hpp"
+#include "rendering/RenderSnapshot.hpp"
 
 struct PlayerStats;
 
@@ -23,6 +24,8 @@ class Engine : public IEngine
         static std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
 
+        sf::Time roundTimer_;
+        bool gameOver_;
         /*
         vector<Player> listaPlayers;
         vector<Enemigo> listaEnemigos;
@@ -66,7 +69,7 @@ class Engine : public IEngine
         bool running() const override;
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         void pushEvento(const Evento& evento) override;
-        //RenderSnapshot makeRenderSnapshot();
+        RenderSnapshot makeRenderSnapshot();
 };
 
 //Estructura para crear el hilo de cada jugador

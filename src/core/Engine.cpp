@@ -21,6 +21,14 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
         Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
 
+        switch (i)
+        {
+        case 0: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player1, i}); break;
+        case 1: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player2, i}); break;
+        case 2: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player3, i}); break;
+        case 3: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player4, i}); break;
+        default: break;}
+
         //Se crea un hilo por cada jugador
         /*
         pthread_t thread;
@@ -186,6 +194,61 @@ void Engine::procesarEvento(Evento& evento){
             break;
             */
     }
+}
+
+RenderSnapshot Engine::makeRenderSnapshot()
+{
+    RenderSnapshot snapshot;
+
+    //pthread_mutex_lock(&boardMutex_);
+
+    int width  = tablero_.getWidth();
+    int height = tablero_.getHeight();
+
+    snapshot.tiles.resize(height, std::vector<TileType>(width));
+
+    snapshot.entities.resize(height, std::vector<EntityType>(width, EntityType::None));
+
+    // Copy board state
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            Position pos{x, y};
+
+            const BoardCell& cell = tablero_.getCell(pos);
+            snapshot.tiles[y][x] = cell.terrainType;
+
+            // Simplified:
+            // render first occupant only
+            if (!cell.occupants.empty())
+            {
+                snapshot.entities[y][x] = cell.occupants.front().type;
+            }
+        }
+    }
+
+    //pthread_mutex_unlock(&boardMutex_);
+
+    // Copy player data
+    for (const Player& p : jugadores_)
+    {
+        snapshot.players.push_back(PlayerData{
+            static_cast<int>(p.id()),
+            static_cast<int>(p.vida()),
+            static_cast<int>(p.maxBombas()),
+            static_cast<int>(p.restBombas()),
+            static_cast<int>(p.rangoExplosion()),
+            static_cast<int>(p.velocidad())
+        });
+    }
+
+    // HUD data
+    snapshot.hud.roundTime = roundTimer_.asSeconds();
+    snapshot.hud.gameOver  = gameOver_;
+    snapshot.hud.numPlayers = jugadores_.size();
+
+    return snapshot;
 }
 
 void Engine::onPlayerMove(Evento &evento)

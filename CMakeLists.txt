@@ -35,6 +35,10 @@ target_link_libraries(PlayerTest core)
 add_executable(TableroTest tests/TableroTest.cpp)
 target_link_libraries(TableroTest core)
 
+# Test
+add_executable(RenderSnapshotTest tests/RenderSnapshotTest.cpp)
+target_link_libraries(RenderSnapshotTest core sfml-graphics sfml-window sfml-system Threads::Threads)
+
 # Flags
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(bomberman PRIVATE -Wall -Wextra -Wpedantic)
