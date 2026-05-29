@@ -190,68 +190,59 @@ void Engine::procesarEvento(Evento& evento){
 
 void Engine::onPlayerMove(Evento &evento)
 {
-    //TODO: remake this method taking into account new structure of Tablero
-    /*
-    Player& player = jugadores_[evento.autor()];
+    int playerId = evento.autor();
+
+    if (playerId < 0 || playerId >= jugadores_.size())
+        return;
+
+    Player& player = jugadores_[playerId];
 
     int dx = evento.data().mover.dx;
     int dy = evento.data().mover.dy;
 
-    int oldX = player.posX();
-    int oldY = player();
+    Position oldPos = player.position();
 
-    int newX = oldX + dx;
-    int newY = oldY + dy;
+    Position newPos{
+        oldPos.x + dx,
+        oldPos.y + dy
+    };
 
     // Limites del tablero
-    if (newX < 0 || newY < 0 ||
-        newX >= tablero_.getWidth() ||
-        newY >= tablero_.getHeight())
+    if (newPos.x < 0 ||
+        newPos.y < 0 ||
+        newPos.y >= tablero_.matrix().size() ||
+        newPos.x >= tablero_.matrix()[0].size())
     {
         return;
     }
 
-    CellContent destino = tablero_.getCell({newX, newY});
-
-    // Colisiones
-    switch (destino.type)
+    // Verificar si se puede caminar
+    if (!tablero_.isWalkable(newPos))
     {
-        case Wall:
-        case DestructibleWall:
-        case Bomb:
-            return;
-
-        default:
-            break;
+        return;
     }
 
-    // Liberar celda anterior
-    tablero_.setCell(
-        Floor,
-        -1,
-        {oldX, oldY}
+    // Mover occupant en tablero
+    bool moved = tablero_.moveOccupant(
+        oldPos,
+        newPos,
+        player.id()
     );
 
-    // Actualizar posicion
-    player.setPosition(newX, newY);
+    if (!moved)
+    {
+        return;
+    }
 
-    // Actualizar tablero
-    BoardElement tipoJugador =
-        static_cast<BoardElement>(Player1 + player.id());
-
-    tablero_.setCell(
-        tipoJugador,
-        player.id(),
-        {newX, newY}
-    );
+    // Actualizar posicion interna del jugador
+    player.setPosition(newPos.x, newPos.y);
 
     printf(
-        "Jugador %i se movio a (%i, %i)\n",
+        "Jugador %d se movio a (%d, %d)\n",
         player.id(),
-        newX,
-        newY
+        newPos.x,
+        newPos.y
     );
-    */
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
