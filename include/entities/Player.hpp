@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "entities/Personaje.hpp"
+#include "utils/Position.hpp"
 
 //Forward declaration
 enum PowerUpType : int;
@@ -26,6 +27,23 @@ class Player : public Personaje
 
         std::optional<Evento> colocarBomba();
         void actualizarStat(PowerUpType tipo, int cantidad);
+
+        int posX() const { return posX_; }
+        int posY() const { return posY_; }
+
+        Position position() const
+        {
+            return Position{
+                static_cast<unsigned int>(posX_),
+                static_cast<unsigned int>(posY_)
+            };
+        }
+
+        void setPosition(int x, int y)
+        {
+            posX_ = x;
+            posY_ = y;
+        }
 
         unsigned int maxBombas() const {return maxBombas_;};
         unsigned int restBombas() const {return restBombas_;};
