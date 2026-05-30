@@ -21,11 +21,11 @@ class Engine : public IEngine
     private:
         std::atomic<bool> running_;
         Tablero tablero_;
-        static std::vector<Player> jugadores_;
+        std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
 
-        sf::Time roundTimer_;
-        bool gameOver_;
+        sf::Time roundTimer_ = sf::seconds(180.f);
+        bool gameOver_ = false;
         /*
         vector<Player> listaPlayers;
         vector<Enemigo> listaEnemigos;

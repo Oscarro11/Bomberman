@@ -2,8 +2,6 @@
 #include "ecs/PlayerStats.hpp"
 #include "utils/AssetsUtils.hpp"
 
-std::vector<Player> Engine::jugadores_;
-
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
     : inputHandler_(this)
     , tablero_(tableroSource)
@@ -18,9 +16,9 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
     {
         PlayerStats* info = jugadores.at(i);
 
-        Player player = Player(i, 3, info -> maxBombas, info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
+        Player player = Player(i, 3, info -> maxBombas, info -> rangoExplosion,  info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
-
+        
         switch (i)
         {
         case 0: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player1, i}); break;
@@ -234,11 +232,11 @@ RenderSnapshot Engine::makeRenderSnapshot()
     for (const Player& p : jugadores_)
     {
         snapshot.players.push_back(PlayerData{
-            static_cast<int>(p.id()),
-            static_cast<int>(p.vida()),
-            static_cast<int>(p.maxBombas()),
-            static_cast<int>(p.restBombas()),
-            static_cast<int>(p.rangoExplosion()),
+            p.id(),
+            p.vida(),
+            p.maxBombas(),
+            p.restBombas(),
+            p.rangoExplosion(),
             static_cast<int>(p.velocidad())
         });
     }
@@ -299,13 +297,6 @@ void Engine::onPlayerMove(Evento &evento)
 
     // Actualizar posicion interna del jugador
     player.setPosition(newPos.x, newPos.y);
-
-    printf(
-        "Jugador %d se movio a (%d, %d)\n",
-        player.id(),
-        newPos.x,
-        newPos.y
-    );
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)

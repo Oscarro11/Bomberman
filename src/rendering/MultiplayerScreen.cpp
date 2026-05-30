@@ -1,5 +1,6 @@
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/MultiplayerScreen.hpp"
+#include "rendering/GameScreen.hpp"
 
 #include "utils/GameConstants.hpp"
 #include "ecs/PlayerStats.hpp"
@@ -227,16 +228,16 @@ void MultiplayerConfigurationScreen::syncSelectedFlags() {
 
 void MultiplayerConfigurationScreen::incrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      (unsigned int) MAX_BOMBAS);  break;
-        case 1: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  (unsigned int) MAX_RANGO);  break;
-        case 2: p.stats.velocidad      = std::min(p.stats.velocidad + 1.0,     MAX_VEL);    break;
+        case 0: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      ( int) MAX_BOMBAS);  break;
+        case 1: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  ( int) MAX_RANGO);  break;
+        case 2: p.stats.velocidad      = std::min(p.stats.velocidad + 1,     MAX_VEL);    break;
     }
 }
 
 void MultiplayerConfigurationScreen::decrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      (unsigned int) MIN_BOMBAS); break;
-        case 1: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, (unsigned int) MIN_RANGO); break;
-        case 2: p.stats.velocidad      = std::max(p.stats.velocidad - 1.0,    MIN_VEL);   break;
+        case 0: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      ( int) MIN_BOMBAS); break;
+        case 1: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, ( int) MIN_RANGO); break;
+        case 2: p.stats.velocidad      = std::max(p.stats.velocidad - 1,    MIN_VEL);   break;
     }
 }

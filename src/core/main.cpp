@@ -29,16 +29,17 @@ int main() {
     // Hand off to game loop
     if (vista.shouldStartGame()) {
         std::vector<PlayerStats*> playerInfo = vista.getPlayerStats();
-
         Engine engine("mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
+
+        vista.transitionToGame();
 
         while (window.isOpen() && engine.running())
         {
             sf::Event event;
             std::vector<sf::Keyboard::Key> pressedKeys;
             sf::Time dt = clock.restart();
-
+ 
             while (window.pollEvent(event))
             {
                 if (event.type == sf::Event::Closed)
@@ -46,6 +47,12 @@ int main() {
                     window.close();
                 }
                 else if (event.type == sf::Event::KeyPressed){
+                    if (event.key.code == sf::Keyboard::Escape)
+                    {
+                        window.close();
+                        break;
+                    }
+
                     pressedKeys.push_back(event.key.code);
                 }
             }
@@ -54,11 +61,21 @@ int main() {
             {
                 inputHandler.update(pressedKeys);
             }
+            
+            // Take snapshot under mutex
+            RenderSnapshot snapshot;
+            //pthread_mutex_lock(&engine.eventMutex_);
+            snapshot = engine.makeRenderSnapshot();
+            //pthread_mutex_unlock(&engine.eventMutex_);
+
+            vista.updateSnapshot(snapshot);
+
+            // Render through base class — no arguments
+            vista.render();
 
             sf::sleep(sf::milliseconds(16));
         }
     }
     
-
     return 0;
 }
