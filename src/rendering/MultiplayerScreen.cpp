@@ -13,40 +13,40 @@ Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
     switch (key) {
 
         // --- Player selection ---
-        case sf::Keyboard::A:
+        case sf::Keyboard::Key::A:
             activePlayer_ = (activePlayer_ + players_.size() - 1)
                             % players_.size();
             syncSelectedFlags();
             break;
 
-        case sf::Keyboard::D:
+        case sf::Keyboard::Key::D:
             activePlayer_ = (activePlayer_ + 1) % players_.size();
             syncSelectedFlags();
             break;
 
         // --- Attribute selection ---
-        case sf::Keyboard::Tab:
+        case sf::Keyboard::Key::Tab:
             selectedAttr_ = (selectedAttr_ + 1) % NUM_ATTRS;
             break;
 
         // --- Change attribute value ---
-        case sf::Keyboard::W:
+        case sf::Keyboard::Key::W:
             incrementAttr(players_[activePlayer_], selectedAttr_);
             break;
 
-        case sf::Keyboard::S:
+        case sf::Keyboard::Key::S:
             decrementAttr(players_[activePlayer_], selectedAttr_);
             break;
 
         // --- Add / remove players ---
-        case sf::Keyboard::Q:
+        case sf::Keyboard::Key::Q:
             if ((int)players_.size() < MAX_PLAYERS) {
                 players_.push_back(PlayerConfig{});
                 syncSelectedFlags();
             }
             break;
 
-        case sf::Keyboard::E:
+        case sf::Keyboard::Key::E:
             if ((int)players_.size() > MIN_PLAYERS) {
                 players_.pop_back();
                 if (activePlayer_ >= (int)players_.size())
@@ -56,21 +56,26 @@ Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
             break;
 
         // --- Bottom button selection ---
-        case sf::Keyboard::Left:
-        case sf::Keyboard::Right:
+        case sf::Keyboard::Key::Left:
+        case sf::Keyboard::Key::Right:
             selectedOption_ = (selectedOption_ + 1) % 2;
             break;
 
         // --- Confirm ---
-        case sf::Keyboard::Return:
+        case sf::Keyboard::Key::Enter:
             if (selectedOption_ == 0)
-                return new StartScreen;    // → launches Engine
+                return new StartScreen();    // → launches Engine
+            
             if (selectedOption_ == 1)
                 return new MainMenuScreen();  // → back to main
 
+            break;
+
         // --- Back ---
-        case sf::Keyboard::Escape:
+        case sf::Keyboard::Key::Escape:
             return new MainMenuScreen();
+
+            break;
 
         default:
             break;

@@ -31,67 +31,117 @@ namespace ScreenUtils {
         CHAR_W   = static_cast<int>(CHAR_W_F);
     }
 
-    void drawLine(sf::RenderWindow& window, const sf::Font& font,
-                  const std::string& line, int row, sf::Color color) {
-        sf::Text text;
-        text.setFont(font);
+    void drawLine(sf::RenderWindow& window,
+                const sf::Font& font,
+                const std::string& line,
+                int row,
+                sf::Color color)
+    {
+        sf::Text text(font);
+
         text.setString(line);
         text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
         text.setFillColor(color);
-        text.setPosition(MARGIN, MARGIN + row * CHAR_H);
+
+        text.setPosition(
+            sf::Vector2f(
+                static_cast<float>(MARGIN),
+                static_cast<float>(MARGIN + row * CHAR_H)
+            )
+        );
+
         window.draw(text);
     }
 
-    void drawLineAt(sf::RenderWindow& window, const sf::Font& font,
-                    const std::string& line, int row, int col,
-                    sf::Color color) {
-        sf::Text text;
-        text.setFont(font);
+    void drawLineAt(sf::RenderWindow& window,
+                    const sf::Font& font,
+                    const std::string& line,
+                    int row,
+                    int col,
+                    sf::Color color)
+    {
+        sf::Text text(font);
+
         text.setString(line);
         text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
         text.setFillColor(color);
-        text.setPosition(MARGIN + col * CHAR_W_F, MARGIN + row * CHAR_H);
+
+        text.setPosition(
+            sf::Vector2f(
+                MARGIN + col * CHAR_W_F,
+                static_cast<float>(MARGIN + row * CHAR_H)
+            )
+        );
+
         window.draw(text);
     }
 
-    void drawSegments(sf::RenderWindow& window, const sf::Font& font,
-                      const std::vector<TextSegment>& segments, int row) {
-        float x = (float)MARGIN;
-        float y = (float)(MARGIN + row * CHAR_H);
+    void drawSegments(sf::RenderWindow& window,
+                    const sf::Font& font,
+                    const std::vector<TextSegment>& segments,
+                    int row)
+    {
+        float x = static_cast<float>(MARGIN);
+        float y = static_cast<float>(MARGIN + row * CHAR_H);
+
         int cursor = 0;
 
-        for (const auto& seg : segments) {
-            if (seg.text.empty()) continue;
-            sf::Text text;
-            text.setFont(font);
+        for (const auto& seg : segments)
+        {
+            if (seg.text.empty())
+                continue;
+
+            sf::Text text(font);
+
             text.setString(seg.text);
             text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
             text.setFillColor(seg.color);
-            text.setPosition(x + cursor * CHAR_W_F, y);
+
+            text.setPosition(
+                sf::Vector2f(
+                    x + cursor * CHAR_W_F,
+                    y
+                )
+            );
+
             window.draw(text);
 
-            cursor += seg.text.size();
+            cursor += static_cast<int>(seg.text.size());
         }
     }
 
-    void drawSegmentsAt(sf::RenderWindow& window, const sf::Font& font,
+    void drawSegmentsAt(sf::RenderWindow& window,
+                        const sf::Font& font,
                         const std::vector<TextSegment>& segments,
-                        int row, int startCol) {
+                        int row,
+                        int startCol)
+    {
         float x = MARGIN + startCol * CHAR_W_F;
-        float y = (float)(MARGIN + row * CHAR_H);
+        float y = static_cast<float>(MARGIN + row * CHAR_H);
+
         int cursor = 0;
 
-        for (const auto& seg : segments) {
-            if (seg.text.empty()) continue;
-            sf::Text text;
-            text.setFont(font);
+        for (const auto& seg : segments)
+        {
+            if (seg.text.empty())
+                continue;
+
+            sf::Text text(font);
+
             text.setString(seg.text);
             text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
             text.setFillColor(seg.color);
-            text.setPosition(x + cursor * CHAR_W_F, y);
+
+            text.setPosition(
+                sf::Vector2f(
+                    x + cursor * CHAR_W_F,
+                    y
+                )
+            );
+
             window.draw(text);
-            
-            cursor += seg.text.size();
+
+            cursor += static_cast<int>(seg.text.size());
         }
     }
 }

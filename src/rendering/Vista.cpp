@@ -15,27 +15,35 @@ Vista::~Vista() {
     delete currentScreen_;
 }
 
-void Vista::handleEvent(const sf::Event& event) {
-    if (event.type != sf::Event::KeyPressed) return;
+void Vista::handleEvent(const sf::Event& event)
+{
+    if (const auto* keyPressed =
+            event.getIf<sf::Event::KeyPressed>())
+    {
+        Screen* next =
+            currentScreen_->handleInput(
+                keyPressed->code
+            );
 
-    Screen* next = currentScreen_ -> handleInput(event.key.code);
-
-    if (next != nullptr) {
-
-        if (dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) != nullptr &&
-            dynamic_cast<StartScreen*>(next) != nullptr) {
-            startGame_ = true;
-            return;
-        }
-
-        if (dynamic_cast<ExitScreen*>(next) != nullptr)
+        if (next != nullptr)
         {
-            window_.close();
-            return;
+            if (dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) != nullptr &&
+                dynamic_cast<StartScreen*>(next) != nullptr)
+            {
+
+                startGame_ = true;
+                return;
+            }
+
+            if (dynamic_cast<ExitScreen*>(next) != nullptr)
+            {
+                window_.close();
+                return;
+            }
+
+            delete currentScreen_;
+            currentScreen_ = next;
         }
-       
-        delete currentScreen_;
-        currentScreen_ = next;
     }
 }
 

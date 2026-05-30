@@ -6,12 +6,12 @@
 
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
 {
-    if (key == sf::Keyboard::W)
+    if (key == sf::Keyboard::Key::W)
         selectedOption_ = (selectedOption_ + 4) % 5;
-    if (key == sf::Keyboard::S)
+    if (key == sf::Keyboard::Key::S)
         selectedOption_ = (selectedOption_ + 1) % 5;
     
-    if (key == sf::Keyboard::Return) {
+    if (key == sf::Keyboard::Key::Enter) {
         if (selectedOption_ == 0) return new InstructionsScreen;
         if (selectedOption_ == 1)
         {

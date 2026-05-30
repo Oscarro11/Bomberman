@@ -2,14 +2,37 @@
 
 //Mapa de teclas a usar para cada jugador
 const KeyMap InputHandler::KEYMAPS[MAX_PLAYERS] = {
-    { sf::Keyboard::W, sf::Keyboard::S,
-      sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::E },   // P1
-    { sf::Keyboard::Up, sf::Keyboard::Down,
-      sf::Keyboard::Left, sf::Keyboard::Right, sf::Keyboard::RShift },  // P2
-    { sf::Keyboard::I,  sf::Keyboard::K,
-      sf::Keyboard::J,  sf::Keyboard::L,     sf::Keyboard::O },  // P2
-    { sf::Keyboard::Numpad8, sf::Keyboard::Numpad5,
-      sf::Keyboard::Numpad4, sf::Keyboard::Numpad6, sf::Keyboard::Numpad7 } // P3
+    {
+        sf::Keyboard::Key::W,
+        sf::Keyboard::Key::S,
+        sf::Keyboard::Key::A,
+        sf::Keyboard::Key::D,
+        sf::Keyboard::Key::E
+    }, // P1
+
+    {
+        sf::Keyboard::Key::Up,
+        sf::Keyboard::Key::Down,
+        sf::Keyboard::Key::Left,
+        sf::Keyboard::Key::Right,
+        sf::Keyboard::Key::RShift
+    }, // P2
+
+    {
+        sf::Keyboard::Key::I,
+        sf::Keyboard::Key::K,
+        sf::Keyboard::Key::J,
+        sf::Keyboard::Key::L,
+        sf::Keyboard::Key::O
+    }, // P3
+
+    {
+        sf::Keyboard::Key::Numpad8,
+        sf::Keyboard::Key::Numpad5,
+        sf::Keyboard::Key::Numpad4,
+        sf::Keyboard::Key::Numpad6,
+        sf::Keyboard::Key::Numpad7
+    } // P4
 };
 
 InputHandler::InputHandler(IEngine *engine)
