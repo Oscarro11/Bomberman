@@ -1,5 +1,6 @@
 #include "rendering/Vista.hpp"
 #include "rendering/MainMenuScreen.hpp"
+#include "rendering/MultiplayerScreen.hpp"
 #include "utils/ScreenUtils.hpp"
 #include <sstream>
 
@@ -8,41 +9,41 @@ Vista::Vista(sf::RenderWindow& window, sf::Font& font)
     , font_(font)
     , currentScreen_(new MainMenuScreen)
 {
-    ScreenUtils::setCharSize(window);
 }
 
 Vista::~Vista() {
     delete currentScreen_;
 }
 
-void Vista::handleEvent(const sf::Event& event) {
-    if (event.type != sf::Event::KeyPressed) return;
+void Vista::handleEvent(const sf::Event& event)
+{
+    if (const auto* keyPressed =
+            event.getIf<sf::Event::KeyPressed>())
+    {
+        Screen* next =
+            currentScreen_->handleInput(
+                keyPressed->code
+            );
 
-    Screen* next = currentScreen_ -> handleInput(event.key.code);
-
-    if (next != nullptr) {
-        /*
-        // Check if NewGameScreen signaled start
-        if (dynamic_cast<NewMultiplayerMenuScreen*>(currentScreen_) &&
-            dynamic_cast<MainMenuScreen*>(next)) {
-            // back to main — not starting
-        }
-        if (dynamic_cast<NewMultiplayerMenuScreen*>(next) == nullptr &&
-            dynamic_cast<SettingsScreen*>(next) == nullptr) {
-            startGame_ = true;   // no known screen → start game
-            return;
-        }
-        */
-
-        if (dynamic_cast<EmptyScreen*>(next))
+        if (next != nullptr)
         {
-            window_.close();
-            return;
+            if (dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) != nullptr &&
+                dynamic_cast<StartScreen*>(next) != nullptr)
+            {
+
+                startGame_ = true;
+                return;
+            }
+
+            if (dynamic_cast<ExitScreen*>(next) != nullptr)
+            {
+                window_.close();
+                return;
+            }
+
+            delete currentScreen_;
+            currentScreen_ = next;
         }
-        
-       
-        delete currentScreen_;
-        currentScreen_ = next;
     }
 }
 
@@ -53,4 +54,23 @@ void Vista::render() {
         currentScreen_ -> render(window_, font_);
         window_.display();
     }
+}
+
+std::vector<PlayerStats*> Vista::getPlayerStats() const
+{
+    std::vector<PlayerStats*> info;
+
+    for (const PlayerConfig* config :
+         dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_)->getPlayerConfigs())
+    {
+        info.push_back(
+            new PlayerStats{
+                config->stats.maxBombas,
+                config->stats.rangoExplosion,
+                config->stats.velocidad
+            }
+        );
+    }
+
+    return info;
 }

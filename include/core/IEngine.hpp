@@ -1,7 +1,8 @@
 #pragma once
-#include "ecs/Evento.hpp"
 
-//This file is used to avoid a circular dependency between IutHandler and Engine
+//This file is used to avoid a circular dependency between InputHandler and Engine
+class Evento;
+
 class IEngine {
 public:
     virtual void pushEvento(const Evento& e) = 0;

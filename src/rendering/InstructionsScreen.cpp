@@ -1,11 +1,12 @@
 #include "rendering/InstructionsScreen.hpp"
+#include "rendering/MainMenuScreen.hpp"
 
 using namespace ScreenUtils;
 
 Screen* InstructionsScreen::handleInput(sf::Keyboard::Key key) {
-    if (key == sf::Keyboard::Escape || key == sf::Keyboard::Return)
+    if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::Enter)
         return new MainMenuScreen;
-    return nullptr;
+    return Screen::STAY;
 }
 
 void InstructionsScreen::render(sf::RenderWindow& window,

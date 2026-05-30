@@ -1,6 +1,6 @@
 #pragma once
 
-enum PowerUpType{
+enum PowerUpType : int{
     maxBomb,
     explosionRange,
     speed

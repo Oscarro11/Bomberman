@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <SFML/Graphics.hpp> 
-#include <utils/ScreenUtils.hpp>
+
+#include "utils/ScreenUtils.hpp"
 
 //Abstract class to manage screen rendering for various menus
 class Screen {
@@ -13,7 +14,17 @@ class Screen {
         virtual Screen* handleInput(sf::Keyboard::Key key) = 0;
         virtual void render(sf::RenderWindow& window, const sf::Font& font) const = 0;
 
-        //TODO: add specific constants for Screen changes instead of nullptr
-        //static Screen* STAY;
-        //static Screen* START_GAME;
+        inline static Screen* STAY = nullptr;       
+};
+
+class ExitScreen : public Screen {
+    public: 
+        Screen* handleInput(sf::Keyboard::Key key) override {return Screen::STAY;};
+        void render(sf::RenderWindow& window, const sf::Font& font) const override {};
+};
+
+class StartScreen : public Screen {
+    public: 
+        Screen* handleInput(sf::Keyboard::Key key) override {return Screen::STAY;};
+        void render(sf::RenderWindow& window, const sf::Font& font) const override {};
 };

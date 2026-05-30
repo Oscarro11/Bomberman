@@ -1,65 +1,78 @@
 #include "rendering/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
+#include "utils/ScreenUtils.hpp"
+#include "ecs/PlayerStats.hpp"
 
-int main() {
-    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
-    sf::Font font;
-    font.loadFromFile("assets/fonts/consola.ttf");
+int main()
+{
+    sf::RenderWindow window(
+        sf::VideoMode::getDesktopMode(),
+        "Bomberman",
+        sf::State::Fullscreen
+    );
+
+    sf::Font font("assets/fonts/consola.ttf");
+
+    ScreenUtils::setCharSize(window);
+    ScreenUtils::measureFont(font);
 
     Vista vista(window, font);
     sf::Clock clock;
-    
-    // Menu loop — runs until player hits Start
-    while (window.isOpen() && !vista.shouldStartGame()) {
-        sf::Event event;
 
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
-            vista.handleEvent(event);
+    // Menu loop — runs until player hits Start
+    while (window.isOpen() && !vista.shouldStartGame())
+    {
+        while (auto event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window.close();
+            }
+
+            vista.handleEvent(*event);
         }
+
         vista.render();
     }
 
-    /*
     // Hand off to game loop
-    if (vista.shouldStartGame()) {
-        std::vector<PlayerInfo> playerInfo;
-        
-        for (PlayerConfig config: vista.get_players_info())
-        {
-            playerInfo.push_back(PlayerInfo{config.vida, config.maxBombas, config.rangoExplosion, config.velocidad});
-        }
+    if (vista.shouldStartGame())
+    {
+        std::vector<PlayerStats*> playerInfo =
+            vista.getPlayerStats();
 
-        Engine engine("map.txt", playerInfo);
+        Engine engine("mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
-        vista.clear();
-
+        
         while (window.isOpen() && engine.running())
         {
-            sf::Event event;
-            std::vector<sf::Keyboard::Key> pressedKeys;
-            sf::Time dt = clock.restart();
 
-            while (window.pollEvent(event))
+            std::vector<sf::Keyboard::Key> pressedKeys;
+
+            clock.restart();
+
+            while (auto event = window.pollEvent())
             {
-                if (event.type == sf::Event::Closed)
+                if (event->is<sf::Event::Closed>())
                 {
                     window.close();
                 }
-                else if (event.type == sf::Event::KeyPressed){
-                    pressedKeys.push_back(event.key.code);
+                else if (const auto* keyPressed =
+                    event->getIf<sf::Event::KeyPressed>())
+                {
+                    pressedKeys.push_back(keyPressed->code);
                 }
             }
-            
-            if (pressedKeys.size() > 0)
+
+            if (!pressedKeys.empty())
             {
                 inputHandler.update(pressedKeys);
             }
-            
+
+            sf::sleep(sf::milliseconds(16));
         }
     }
-    */
 
     return 0;
 }

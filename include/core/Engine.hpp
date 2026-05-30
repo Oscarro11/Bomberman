@@ -7,28 +7,28 @@
 #include <pthread.h>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
-#include "ecs/Evento.hpp"
-#include "entities/Player.hpp"
+
 #include "core/IEngine.hpp"
+#include "entities/Tablero.hpp"
+#include "entities/Player.hpp"
 #include "input/InputHandler.hpp"
 
-//Estructura de datos usada en Vista, para trasladar la info del menu principal
-//a las instancias de los jugadores
-struct PlayerInfo
-{
-    unsigned int vida;
-    unsigned int maxBombas;
-    unsigned int rangoExplosion;
-    double velocidad;
-};
+struct PlayerStats;
 
 class Engine : public IEngine
 {
     private:
         std::atomic<bool> running_;
-        //Tablero tablero;
+        Tablero tablero_;
         static std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
+
+        /*
+        vector<Player> listaPlayers;
+        vector<Enemigo> listaEnemigos;
+        vector<Bomba> listaBombas;
+        vector<PowerUp> listaPowerUps;
+        */
 
         pthread_t logicThread_;
 
@@ -55,7 +55,7 @@ class Engine : public IEngine
         void onPlayerMove(Evento& evento);
 
     public:
-        Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores);
+        Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores);
         virtual ~Engine();
 
         int numPlayers() const override{return jugadores_.size();}

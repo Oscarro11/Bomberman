@@ -16,9 +16,9 @@ ScoresScreen::ScoresScreen(const std::vector<ScoreEntry>& scores)
 }
 
 Screen* ScoresScreen::handleInput(sf::Keyboard::Key key) {
-    if (key == sf::Keyboard::Escape || key == sf::Keyboard::Return)
+    if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::Enter)
         return new MainMenuScreen();
-    return nullptr;
+    return Screen::STAY;
 }
 
 void ScoresScreen::render(sf::RenderWindow& window,

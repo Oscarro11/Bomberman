@@ -1,29 +1,17 @@
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/InstructionsScreen.hpp"
-#include "rendering/GameScreen.hpp"
 #include "rendering/ScoresScreen.hpp"
-
-#include "core/Engine.hpp"
-//#include "rendering/MultiplayerScreen.hpp"
-
-Screen *EmptyScreen::handleInput(sf::Keyboard::Key key)
-{
-    return nullptr;
-}
-
-void EmptyScreen::render(sf::RenderWindow &window, const sf::Font &font) const
-{
-
-}
+#include "rendering/MultiplayerScreen.hpp"
+#include "rendering/GameScreen.hpp"
 
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
 {
-    if (key == sf::Keyboard::W)
+    if (key == sf::Keyboard::Key::W)
         selectedOption_ = (selectedOption_ + 4) % 5;
-    if (key == sf::Keyboard::S)
+    if (key == sf::Keyboard::Key::S)
         selectedOption_ = (selectedOption_ + 1) % 5;
     
-    if (key == sf::Keyboard::Return) {
+    if (key == sf::Keyboard::Key::Enter) {
         if (selectedOption_ == 0) return new InstructionsScreen;
         if (selectedOption_ == 1)
         {
@@ -38,11 +26,11 @@ Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
         }
             
         //if (selectedOption_ == 2) return new InstructionsScreen;     //One player mode
-        if (selectedOption_ == 3) return new GameScreen;    //Multi player mode, just a preview
-        if (selectedOption_ == 4) return new EmptyScreen;   // quit handled by Vista
+        if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;    //Multi player mode, just a preview
+        if (selectedOption_ == 4) return new ExitScreen;   // quit handled by Vista
     }
     
-    return nullptr;   // stay on this screen
+    return Screen::STAY;   // stay on this screen
 }
 
 void MainMenuScreen::render(sf::RenderWindow &window, const sf::Font &font) const

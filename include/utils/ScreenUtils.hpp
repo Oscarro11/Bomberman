@@ -9,6 +9,7 @@ namespace ScreenUtils {
     // Layout constants
     extern int CHAR_W;
     extern int CHAR_H;
+    extern float CHAR_W_F;
     extern int MARGIN;
     extern double CHAR_SCALE;
 
@@ -28,6 +29,7 @@ namespace ScreenUtils {
 
     // Function to set the size of rendered chars, based on window size
     void setCharSize(sf::RenderWindow& window);
+    void measureFont(const sf::Font &font);
 
     // Drawing functions
     void drawLine(sf::RenderWindow& window, const sf::Font& font,
