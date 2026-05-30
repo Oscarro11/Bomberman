@@ -26,13 +26,13 @@ void Tablero::loadMap(const std::string& source)
 
     std::string line;
 
-    unsigned int y = 0;
+    int y = 0;
 
     while (std::getline(file, line))
     {
         std::vector<BoardCell> row;
 
-        for (unsigned int x = 0; x < line.size(); ++x)
+        for (int x = 0; x < line.size(); ++x)
         {
             BoardCell cell;
 

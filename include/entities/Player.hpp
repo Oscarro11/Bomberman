@@ -11,15 +11,15 @@ enum PowerUpType : int;
 class Player : public Personaje
 {
     private:
-        unsigned int maxBombas_;
-        unsigned int restBombas_;
-        unsigned int rangoExplosion_;
-        double velocidad_;
-        unsigned int spawnPointX_;
-        unsigned int spawnPointY_; 
+        int maxBombas_;
+        int restBombas_;
+        int rangoExplosion_;
+        int velocidad_;
+        int spawnPointX_;
+        int spawnPointY_; 
 
     public:
-        Player(unsigned int id, unsigned int vida, unsigned int maxBombas, double velocidad, int spawnPointX, int spawnPointY);
+        Player(int id, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY);
         virtual ~Player() = default;
 
         Evento generarEventoMov(Directions direction) override;
@@ -34,8 +34,7 @@ class Player : public Personaje
         Position position() const
         {
             return Position{
-                static_cast<unsigned int>(posX_),
-                static_cast<unsigned int>(posY_)
+                posX_, posY_
             };
         }
 
@@ -45,10 +44,10 @@ class Player : public Personaje
             posY_ = y;
         }
 
-        unsigned int maxBombas() const {return maxBombas_;};
-        unsigned int restBombas() const {return restBombas_;};
-        unsigned int rangoExplosion() const {return rangoExplosion_;};
-        double velocidad() const {return velocidad_;};
-        unsigned int spawnPointX() const {return spawnPointX_;};
-        unsigned int spawnPointY() const {return spawnPointY_;};
+        int maxBombas() const {return maxBombas_;};
+        int restBombas() const {return restBombas_;};
+        int rangoExplosion() const {return rangoExplosion_;};
+        int velocidad() const {return velocidad_;};
+        int spawnPointX() const {return spawnPointX_;};
+        int spawnPointY() const {return spawnPointY_;};
 };

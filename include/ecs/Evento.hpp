@@ -16,7 +16,7 @@ enum EventType{
 
 union EventData{
     struct {int dx, dy;} mover;
-    struct {unsigned int radio;} explosion;
+    struct {int radio;} explosion;
     struct {int tipo;} powerUp;
 };
 
@@ -35,16 +35,16 @@ class Evento
         ~Evento() = default;
 
         //Constructores de fabrica
-        static Evento playerMove(int autorId, unsigned int posX, unsigned int posY, int dx, int dy);
-        static Evento playerPlaceBomb(int autorId, unsigned int posX, unsigned posY);
-        static Evento playerDeath(int autorId, int playerId, unsigned int posX, unsigned int posY);
-        static Evento playerPickPowerUp(int autorId, int powerUpId, unsigned int posX, unsigned int posY, int powerUpTipo);
+        static Evento playerMove(int autorId, int posX, int posY, int dx, int dy);
+        static Evento playerPlaceBomb(int autorId, int posX, int posY);
+        static Evento playerDeath(int autorId, int playerId, int posX, int posY);
+        static Evento playerPickPowerUp(int autorId, int powerUpId, int posX, int posY, int powerUpTipo);
         
         /*
-        static Evento bombExplode(int bombId, unsigned int posX, unsigned int posY, int radio);
+        static Evento bombExplode(int bombId,  int posX,  int posY, int radio);
         static Evento chainExplosion(int bombId);
         static Evento enemyMove(int enemyId, int dx, int dy);
-        static Evento enemyDeath(int enemyId, unsigned int posX, unsigned int posY);
+        static Evento enemyDeath(int enemyId,  int posX,  int posY);
         static Evento tileDestroyed(int posX, int posY);
         static Evento gameOver();
         static Evento roundStart(); 

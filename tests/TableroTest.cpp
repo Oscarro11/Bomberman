@@ -1,4 +1,6 @@
 #include <cassert>
+#include <iostream>
+
 #include "entities/Tablero.hpp"
 #include "utils/GameConstants.hpp"
 
@@ -159,5 +161,7 @@ void runTest(){
 
 int main() {
     runTest();
+
+    printf("TableroTest se completo con exito\n");
     return 0;
 }

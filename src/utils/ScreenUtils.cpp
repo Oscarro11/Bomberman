@@ -25,7 +25,7 @@ namespace ScreenUtils {
     }
 
     void measureFont(const sf::Font& font) {
-        unsigned int charSize = (unsigned int)(14.f * CHAR_SCALE);
+        int charSize = (int)(14.f * CHAR_SCALE);
 
         CHAR_W_F = font.getGlyph('M', charSize, false).advance;
         CHAR_W   = static_cast<int>(CHAR_W_F);
@@ -36,7 +36,7 @@ namespace ScreenUtils {
         sf::Text text;
         text.setFont(font);
         text.setString(line);
-        text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
+        text.setCharacterSize((int)(14.f * CHAR_SCALE));
         text.setFillColor(color);
         text.setPosition(MARGIN, MARGIN + row * CHAR_H);
         window.draw(text);
@@ -48,7 +48,7 @@ namespace ScreenUtils {
         sf::Text text;
         text.setFont(font);
         text.setString(line);
-        text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
+        text.setCharacterSize((int)(14.f * CHAR_SCALE));
         text.setFillColor(color);
         text.setPosition(MARGIN + col * CHAR_W_F, MARGIN + row * CHAR_H);
         window.draw(text);
@@ -65,7 +65,7 @@ namespace ScreenUtils {
             sf::Text text;
             text.setFont(font);
             text.setString(seg.text);
-            text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
+            text.setCharacterSize((int)(14.f * CHAR_SCALE));
             text.setFillColor(seg.color);
             text.setPosition(x + cursor * CHAR_W_F, y);
             window.draw(text);
@@ -86,7 +86,7 @@ namespace ScreenUtils {
             sf::Text text;
             text.setFont(font);
             text.setString(seg.text);
-            text.setCharacterSize((unsigned int)(14.f * CHAR_SCALE));
+            text.setCharacterSize((int)(14.f * CHAR_SCALE));
             text.setFillColor(seg.color);
             text.setPosition(x + cursor * CHAR_W_F, y);
             window.draw(text);

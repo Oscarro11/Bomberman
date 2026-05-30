@@ -20,8 +20,8 @@ class MultiplayerConfigurationScreen : public Screen {
         static constexpr int MIN_BOMBAS = 1;
         static constexpr int MAX_RANGO  = 6;
         static constexpr int MIN_RANGO  = 1;
-        static constexpr double MAX_VEL = 5.0;
-        static constexpr double MIN_VEL = 1.0;
+        static constexpr int MAX_VEL = 5;
+        static constexpr int MIN_VEL = 1;
 
         std::vector<PlayerConfig> players_  = std::vector<PlayerConfig>(MIN_PLAYERS);
         int                       activePlayer_ = 0;

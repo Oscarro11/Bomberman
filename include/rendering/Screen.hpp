@@ -14,7 +14,7 @@ class Screen {
         virtual Screen* handleInput(sf::Keyboard::Key key) = 0;
         virtual void render(sf::RenderWindow& window, const sf::Font& font) const = 0;
 
-        inline static Screen* STAY = nullptr;       
+        inline static Screen* STAY = nullptr;    
 };
 
 class ExitScreen : public Screen {

@@ -11,7 +11,7 @@ Evento::Evento(EventType tipo, int autor, int objetivo, int posicionX, int posic
     this -> data_ = data;
 }
 
-Evento Evento::playerMove(int autorId, unsigned int posX, unsigned int posY, int dx, int dy)
+Evento Evento::playerMove(int autorId,  int posX,  int posY, int dx, int dy)
 {
     EventData data;
     data.mover = {dx, dy};
@@ -19,17 +19,17 @@ Evento Evento::playerMove(int autorId, unsigned int posX, unsigned int posY, int
     return Evento(EventType::PlayerMove, autorId, -1, posX, posY, data);
 }
 
-Evento Evento::playerPlaceBomb(int autorId, unsigned int posX, unsigned posY)
+Evento Evento::playerPlaceBomb(int autorId,  int posX, int posY)
 {
     return Evento(EventType::PlayerPlaceBomb, autorId, -1, posX, posY, {});
 }
 
-Evento Evento::playerDeath(int autorId, int playerId, unsigned int posX, unsigned int posY)
+Evento Evento::playerDeath(int autorId, int playerId,  int posX,  int posY)
 {
     return Evento(EventType::PlayerDeath, autorId, playerId, posX, posY, {});
 }
 
-Evento Evento::playerPickPowerUp(int autorId, int powerUpId, unsigned int posX, unsigned int posY, int powerUpTipo)
+Evento Evento::playerPickPowerUp(int autorId, int powerUpId,  int posX,  int posY, int powerUpTipo)
 {
     EventData data;
     data.powerUp = {powerUpTipo};
@@ -43,10 +43,10 @@ Evento Evento::manualEvent(EventType tipo, int autor, int objetivo, int posicion
 } 
 
 /*
- Evento Evento::bombExplode(int bombId, unsigned int posX, unsigned int posY, int radio){}
+ Evento Evento::bombExplode(int bombId,  int posX,  int posY, int radio){}
  Evento Evento::chainExplosion(int bombId){}
  Evento Evento::enemyMove(int enemyId, int dx, int dy){}
- Evento Evento::enemyDeath(int enemyId, unsigned int posX, unsigned int posY){}
+ Evento Evento::enemyDeath(int enemyId,  int posX,  int posY){}
  Evento Evento::tileDestroyed(int posX, int posY){}
  Evento Evento::gameOver(){}
  Evento Evento::roundStart(){}

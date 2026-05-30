@@ -1,12 +1,13 @@
 #include "entities/Player.hpp"
 #include "entities/PowerUp.hpp"
 
-Player::Player(unsigned int id, unsigned int vida, unsigned int maxBombas, double velocidad, int spawnPointX, int spawnPointY)
+Player::Player(int id, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY)
 {
     this -> id_ = id;
     this -> vida_ = vida;
     this -> maxBombas_ = maxBombas;
     this -> restBombas_ = maxBombas;
+    this -> rangoExplosion_ = rangoExplosion;
     this -> velocidad_ = velocidad;
 
     this -> spawnPointX_ = spawnPointX;
