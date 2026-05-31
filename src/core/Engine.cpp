@@ -135,6 +135,23 @@ void Engine::update(sf::Time dt)
             ++it;
         }
     }
+    for (auto it = explosiones_.begin();
+        it != explosiones_.end(); )
+    {
+        if (it->expirada())
+        {
+            tablero_.removeOccupant(
+                Position{it->getX(), it->getY()},
+                it->getId()
+            );
+
+            it = explosiones_.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 
     updateGameState();
 }
@@ -588,11 +605,22 @@ void Engine::onBombExplode(Evento& evento)
         bombId
     );
 
+    int explosionId = nextExplosionId_++;
+
+    explosiones_.push_back(
+        Explosion(
+            explosionId,
+            pos.x,
+            pos.y,
+            sf::seconds(1.f)
+        )
+    );
+
     tablero_.addOccupant(
         pos,
         Occupant{
             EntityType::Explosion,
-            bombId
+            explosionId
         }
     );
 }

@@ -13,6 +13,7 @@
 #include "entities/Player.hpp"
 #include "entities/Bomba.hpp"
 #include "entities/Enemigo.hpp"
+#include "entities/Explosion.hpp"
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
 
@@ -27,7 +28,9 @@ class Engine : public IEngine
         std::vector<Enemigo> enemigos_;
         std::vector<Bomba> bombas_;
         std::queue<Evento> listaEventos_;
+        std::vector<Explosion> explosiones_;
 
+        int nextExplosionId_ = 0;
         int nextBombId_ = 0;
 
         sf::Time roundTimer_;
