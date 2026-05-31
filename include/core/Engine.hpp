@@ -27,8 +27,10 @@ class Engine : public IEngine
         std::queue<Evento> listaEventos_;
 
         sf::Time roundTimer_;
-        std::atomic<bool> paused_ = false;
         bool gameOver_;
+
+        sf::Time enemyMoveTimer_ = sf::Time::Zero;
+        static constexpr float ENEMY_MOVE_INTERVAL = 2.4f;   // seconds between moves
 
         /*
         vector<Bomba> listaBombas;
@@ -47,6 +49,9 @@ class Engine : public IEngine
         //Mutex para proteger el acceso a jugadores cuando un nuevo input se lee.
         //Hay que revisar si es necesario
         mutable pthread_mutex_t inputMutex_;
+
+        //Mutex para proteger el acceso a la lista de enemigos
+        mutable pthread_mutex_t enemiesMutex_;
 
         //Condicion que se usa para indicar al hilo de procesamiento que hay un evento disponible
         pthread_cond_t eventReady_;
@@ -77,21 +82,21 @@ class Engine : public IEngine
 
         void update(sf::Time dt);
 
-        void pause();
-        void resume();
-        bool isPaused() const { return paused_.load(); }
-
         int numPlayers() const override{return jugadores_.size();}
 
         //Deberia cambiarse, o revisar de hacer una interfaz para que solo inputHandler y Engine puedan acceder
         Player& getPlayer(int id) {return jugadores_.at(id);}
 
         bool running() const override;
-        inline bool paused() const {return paused_;};
 
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         void pushEvento(const Evento& evento) override;
         RenderSnapshot makeRenderSnapshot();
+};
+
+struct EnemyThreadArg{
+    Engine* engine;
+    int     enemyId;
 };
 
 //Estructura para crear el hilo de cada jugador

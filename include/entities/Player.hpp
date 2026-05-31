@@ -31,22 +31,6 @@ class Player : public Personaje
         std::optional<Evento> colocarBomba();
         void actualizarStat(PowerUpType tipo, int cantidad);
 
-        int posX() const { return posX_; }
-        int posY() const { return posY_; }
-
-        Position position() const
-        {
-            return Position{
-                posX_, posY_
-            };
-        }
-
-        void setPosition(int x, int y)
-        {
-            posX_ = x;
-            posY_ = y;
-        }
-
         bool esInvencible() const;
         void activarInvencibilidad();
         void actualizarInvencibilidad();

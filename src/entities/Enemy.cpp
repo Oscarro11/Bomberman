@@ -1,26 +1,32 @@
+#include <math.h>
 #include "entities/Enemigo.hpp"
 
-Enemigo::Enemigo(int tipo, int alcance, int x, int y)
+Enemigo::Enemigo(int id, int tipo, int alcance, int x, int y)
 {
-    this->tipo_ = tipo;
-    this->recibioDano_ = false;
-    this->alcance_ = alcance;
-    this->posX_ = x;
-    this->posY_ = y;
+    this -> id_ = id;
+    this -> tipo_ = tipo;
+    this -> alcance_ = alcance;
+    this -> posX_ = x;
+    this -> posY_ = y;
+    this -> vida_ = 1;
+
+    this -> recibioDanio_ = false;
 }
 
-int Enemigo::getX()
-{
-    return posX_;
+Evento Enemigo::generarEventoMov(Directions direction) {
+    int dx = 0, dy = 0;
+
+    switch (direction) {
+        case Directions::UP: dy = -1; break;
+        case Directions::DOWN: dy =  1; break;
+        case Directions::LEFT: dx = -1; break;
+        case Directions::RIGHT: dx =  1; break;
+    }
+
+    return Evento::enemyMove(id_, posX_, posY_, dx, dy);
 }
 
-int Enemigo::getY()
-{
-    return posY_;
-}
-
-void Enemigo::setPosition(int x, int y)
-{
-    posX_ = x;
-    posY_ = y;
+std::optional<Evento> Enemigo::recibirDanio(const Personaje& atacante)
+{  
+    return std::nullopt;
 }

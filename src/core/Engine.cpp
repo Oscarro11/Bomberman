@@ -7,11 +7,12 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     : running_(false)
     , inputHandler_(this)
     , tablero_(tableroSource)
-    , roundTimer_(sf::seconds(10.f))
+    , roundTimer_(sf::seconds(180.f))
     , gameOver_(false)
 {
     pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
+    pthread_mutex_init(&enemiesMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
 
     const auto& playersSpawn = tablero_.getSpawnPlayers();
@@ -34,19 +35,20 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     };
     const auto& enemySpawns = tablero_.getSpawnEnemies();
 
+    int enemyId = 0;
     for (const Position& pos : enemySpawns)
     {
-        enemigos_.push_back(
-            Enemigo(1, 3, pos.x, pos.y)
-        );
+        enemigos_.push_back(Enemigo(enemyId, 1, 3, pos.x, pos.y));
 
         tablero_.addOccupant(
             pos,
             Occupant{
                 EntityType::Enemy,
-                static_cast<int>(enemigos_.size() - 1)
+                enemyId
             }
         );
+
+        enemyId++;
     }
 }
 
@@ -69,6 +71,7 @@ Engine::~Engine()
 
     pthread_mutex_destroy(&eventMutex_);
     pthread_mutex_destroy(&inputMutex_);
+    pthread_mutex_destroy(&enemiesMutex_);
     pthread_cond_destroy(&eventReady_);
 }
 
@@ -94,25 +97,20 @@ void Engine::start()
     pthread_create(&logicThread_, nullptr, logic_thread, this);
 }
 
-void Engine::pause() { paused_.store(true);}
-
-void Engine::resume() 
-{ 
-    paused_.store(false);
-    pthread_mutex_lock(&eventMutex_);
-    pthread_cond_broadcast(&eventReady_);
-    pthread_mutex_unlock(&eventMutex_);
-}
-
 void Engine::update(sf::Time dt)
 {
-    if (gameOver_ || paused_) return;
+    if (gameOver_) return;
 
     roundTimer_ -= dt;
 
-    //updateBombs(dt);
-    //updateExplosions(dt);
-    //updatePowerUps(dt);
+    enemyMoveTimer_ += dt;
+    if (enemyMoveTimer_.asSeconds() >= ENEMY_MOVE_INTERVAL) {
+        pthread_mutex_lock(&enemiesMutex_);
+        moveEnemies();   // reads enemigos_ positions safely
+        pthread_mutex_unlock(&enemiesMutex_);
+        enemyMoveTimer_ = sf::Time::Zero;
+    }
+
     updateGameState();
 }
 
@@ -139,27 +137,15 @@ void* Engine::player_thread_process(void* arg)
 // logic_thread
 void* Engine::logic_thread(void* arg) {
     Engine* engine = static_cast<Engine*>(arg);
-    sf::Clock enemyClock;
 
-    //Unicamente se usa para procesar eventos, teniendo pop una forma interna de dormirse
-    while (engine -> running()) {
-        std::optional<Evento> evento = engine -> popEvento();       // locks + unlocks internally
-
-        if (enemyClock.getElapsedTime().asSeconds() > 1.f)
-        {
-            engine->moveEnemies();
-            enemyClock.restart();
-        }
+    while (engine->running()) {
+        std::optional<Evento> evento = engine->popEvento();
 
         for (Player& p : engine->jugadores_)
-        {
             p.actualizarInvencibilidad();
-        }
 
         if (evento.has_value())
-        {
-            engine->procesarEvento(evento.value());             // called without mutex held
-        }
+            engine->procesarEvento(evento.value());
     }
 
     return nullptr;
@@ -181,7 +167,6 @@ void Engine::pushEvento(const Evento &evento)
     listaEventos_.push(evento);
 
     pthread_cond_signal(&eventReady_);
-
     pthread_mutex_unlock(&eventMutex_);
 }
 
@@ -189,7 +174,7 @@ std::optional<Evento> Engine::popEvento()
 {
     pthread_mutex_lock(&eventMutex_);
     
-    while ((listaEventos_.empty() || paused_.load()) && running_.load())
+    while (listaEventos_.empty() && running_.load())
         pthread_cond_wait(&eventReady_, &eventMutex_);
 
     if (!running_.load())
@@ -334,7 +319,7 @@ void Engine::onPlayerMove(Evento &evento)
     int dx = evento.data().mover.dx;
     int dy = evento.data().mover.dy;
 
-    Position oldPos = player.position();
+    Position oldPos = player.getPosition();
 
     Position newPos{
         oldPos.x + dx,
@@ -397,8 +382,8 @@ void Engine::onEnemyMove(Evento& evento)
     int dy = evento.data().mover.dy;
 
     Position oldPos{
-        enemigo.getX(),
-        enemigo.getY()
+        enemigo.posX(),
+        enemigo.posY()
     };
 
     Position newPos{
@@ -442,33 +427,21 @@ void Engine::onEnemyMove(Evento& evento)
     );
 }
 
-void Engine::moveEnemies()
-{
-    for (int i = 0; i < enemigos_.size(); i++)
-    {
-        int dir = rand() % 4;
+void Engine::moveEnemies() {
+    for (int i = 0; i < (int)enemigos_.size(); i++) {
+        Directions direction;
+        int num = rand() % 4;
 
-        int dx = 0;
-        int dy = 0;
-
-        switch (dir)
-        {
-            case 0: dy = -1; break;
-            case 1: dy =  1; break;
-            case 2: dx = -1; break;
-            case 3: dx =  1; break;
+        switch (num){
+            case 0: direction = Directions::DOWN; break;
+            case 1: direction = Directions::UP; break;
+            case 2: direction = Directions::LEFT; break;
+            case 3: direction = Directions::RIGHT; break;
+            default: break;
         }
 
-
-        pushEvento(
-            Evento::enemyMove(
-                i,
-                enemigos_[i].getX(),
-                enemigos_[i].getY(),
-                dx,
-                dy
-            )
-        );
+        // Enemy generates its own event
+        pushEvento(enemigos_[i].generarEventoMov(direction));
     }
 }
 
@@ -494,7 +467,7 @@ void Engine::danioPlayer(int playerId)
     // Si el jugador no muere, se mueve a su posicion de spawn
     else
     {
-        Position oldPos = player.position();
+        Position oldPos = player.getPosition();
 
         Position spawnPos{
             player.spawnPointX(),

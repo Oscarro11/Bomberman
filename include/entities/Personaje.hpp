@@ -4,6 +4,7 @@
 
 #include "ecs/Evento.hpp"
 #include "utils/Directions.hpp"
+#include "utils/Position.hpp"
 
 class Personaje
 {
@@ -12,7 +13,8 @@ protected:
     int posX_;
     int posY_;
     int vida_;
-    
+
+    bool recibioDanio_;
 
 public:
     virtual ~Personaje() = default;
@@ -32,4 +34,5 @@ public:
         posY_ = y;
     }
 
+    Position getPosition(){return Position{posX_, posY_};};
 };
