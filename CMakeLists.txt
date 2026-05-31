@@ -29,7 +29,7 @@ target_link_libraries(bomberman core sfml-graphics sfml-window sfml-system Threa
 
 # Test
 add_executable(PlayerTest tests/PlayerTest.cpp)
-target_link_libraries(PlayerTest core)
+target_link_libraries(PlayerTest core sfml-system)
 
 # Test
 add_executable(TableroTest tests/TableroTest.cpp)

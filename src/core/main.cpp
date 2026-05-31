@@ -18,7 +18,7 @@ int main() {
     // Menu loop — runs until player hits Start
     while (window.isOpen() && !vista.shouldStartGame()) {
         sf::Event event;
-
+        
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
             vista.handleEvent(event);
@@ -29,7 +29,7 @@ int main() {
     // Hand off to game loop
     if (vista.shouldStartGame()) {
         std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
-        Engine engine("mapa.txt", playerInfo);
+        Engine engine("mapa2.txt", playerInfo);
         engine.start();
 
         InputHandler inputHandler(&engine);
