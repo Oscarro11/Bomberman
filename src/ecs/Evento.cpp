@@ -57,8 +57,16 @@ Evento Evento::enemyMove(int enemyId, int posX, int posY, int dx, int dy)
     );
 }
 
+Evento Evento::bombExplode(int bombId, int creador, int posX, int posY, int radio)
+{
+    EventData data;
+    data.explosion.creador = creador;
+    data.explosion.radio = radio;
+
+    return Evento(EventType::BombExplode,bombId,-1,posX,posY,data);
+}
+
 /*
- Evento Evento::bombExplode(int bombId,  int posX,  int posY, int radio){}
  Evento Evento::chainExplosion(int bombId){}
  Evento Evento::enemyDeath(int enemyId,  int posX,  int posY){}
  Evento Evento::tileDestroyed(int posX, int posY){}

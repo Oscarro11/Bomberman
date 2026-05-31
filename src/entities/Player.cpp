@@ -68,6 +68,14 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
     }
 }
 
+void Player::recuperarBomba()
+{
+    if (restBombas_ < maxBombas_)
+    {
+        restBombas_++;
+    }
+}
+
 bool Player::esInvencible() const
 {
     return invencible_;

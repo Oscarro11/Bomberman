@@ -3,6 +3,7 @@
 #include "entities/Enemigo.hpp"
 #include "utils/AssetsUtils.hpp"
 
+
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     : running_(false)
     , inputHandler_(this)
@@ -111,6 +112,30 @@ void Engine::update(sf::Time dt)
         enemyMoveTimer_ = sf::Time::Zero;
     }
 
+    for (auto it = bombas_.begin(); it != bombas_.end(); )
+    {
+        if (it->expirada())
+        {
+            int creador = it->getCreador();
+
+            pushEvento(
+                Evento::bombExplode(
+                    it->getId(),
+                    it->getCreador(),
+                    it->getX(),
+                    it->getY(),
+                    it->getRadio()
+                )
+            );
+
+            it = bombas_.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
     updateGameState();
 }
 
@@ -202,22 +227,23 @@ void Engine::procesarEvento(Evento& evento){
             onEnemyMove(evento);
             break;
             
+        case EventType::PlayerPlaceBomb:
+            onPlayerPlaceBomb(evento);
+            break;
+
+        case EventType::BombExplode:
+            onBombExplode(evento);
+            break;
             /*
             case EventType::PlayerDeath:
                 onPlayerDeath(evento);
                 break;
-        case EventType::PlayerPlaceBomb:
-            onPlayerPlaceBomb(evento);
-            break;
 
 
         case EventType::PlayerPickPowerUp:
             onPlayerPickPowerUp(evento);
             break;
 
-        case EventType::BombExplode:
-            onBombExplode(evento);
-            break;
 
         case EventType::ChainExplosion:
             onChainExplosion(evento);
@@ -282,6 +308,20 @@ RenderSnapshot Engine::makeRenderSnapshot()
             if (!cell.occupants.empty())
             {
                 snapshot.entities[y][x] = cell.occupants.front().type;
+
+                for (const Occupant& occ : cell.occupants)
+                {
+                    if (occ.type == EntityType::Explosion)
+                    {
+                        snapshot.entities[y][x] = EntityType::Explosion;
+                        break;
+                    }
+
+                    if (occ.type == EntityType::Bomb)
+                    {
+                        snapshot.entities[y][x] = EntityType::Bomb;
+                    }
+                }
             }
         }
     }
@@ -487,6 +527,76 @@ void Engine::danioPlayer(int playerId)
     }
     
 }
+
+void Engine::onPlayerPlaceBomb(Evento& evento)
+{
+    int playerId = evento.autor();
+
+    if (playerId < 0 || playerId >= jugadores_.size())
+        return;
+
+    Player& player = jugadores_[playerId];
+
+    Position pos = player.getPosition();
+
+    int bombaId = nextBombId_++;
+
+    const BoardCell& cell = tablero_.getCell(pos);
+
+    for (const Occupant& occ : cell.occupants)
+    {
+        if (occ.type == EntityType::Bomb)
+            return;
+    }
+
+    bombas_.push_back(
+        Bomba(
+            bombaId,
+            playerId,
+            pos.x,
+            pos.y,
+            player.rangoExplosion(),
+            sf::seconds(3.f)
+        )
+    );
+
+    tablero_.addOccupant(
+        pos,
+        Occupant{
+            EntityType::Bomb,
+            bombaId
+        }
+    );
+    
+}
+
+void Engine::onBombExplode(Evento& evento)
+{
+    int creador = evento.data().explosion.creador;
+
+    jugadores_[creador].recuperarBomba();
+
+    Position pos{
+        evento.posicionX(),
+        evento.posicionY()
+    };
+
+    int bombId = evento.autor();
+
+    tablero_.removeOccupant(
+        pos,
+        bombId
+    );
+
+    tablero_.addOccupant(
+        pos,
+        Occupant{
+            EntityType::Explosion,
+            bombId
+        }
+    );
+}
+
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
 {
     pthread_mutex_lock(&inputMutex_);

@@ -30,6 +30,7 @@ class Player : public Personaje
 
         std::optional<Evento> colocarBomba();
         void actualizarStat(PowerUpType tipo, int cantidad);
+        void recuperarBomba();
 
         bool esInvencible() const;
         void activarInvencibilidad();

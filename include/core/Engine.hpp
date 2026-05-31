@@ -11,6 +11,7 @@
 #include "core/IEngine.hpp"
 #include "entities/Tablero.hpp"
 #include "entities/Player.hpp"
+#include "entities/Bomba.hpp"
 #include "entities/Enemigo.hpp"
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
@@ -24,7 +25,10 @@ class Engine : public IEngine
         Tablero tablero_;
         std::vector<Player> jugadores_;
         std::vector<Enemigo> enemigos_;
+        std::vector<Bomba> bombas_;
         std::queue<Evento> listaEventos_;
+
+        int nextBombId_ = 0;
 
         sf::Time roundTimer_;
         bool gameOver_;
@@ -33,7 +37,6 @@ class Engine : public IEngine
         static constexpr float ENEMY_MOVE_INTERVAL = 2.4f;   // seconds between moves
 
         /*
-        vector<Bomba> listaBombas;
         vector<PowerUp> listaPowerUps;
         */
 
@@ -67,6 +70,8 @@ class Engine : public IEngine
         void onPlayerMove(Evento& evento);
         void onEnemyMove(Evento& evento);
         void onPlayerDeath(Evento& evento);
+        void onPlayerPlaceBomb(Evento& evento);
+        void onBombExplode(Evento& evento);
         void moveEnemies();
         void danioPlayer(int playerId);
 
