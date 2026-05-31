@@ -1,5 +1,6 @@
 #include "core/Engine.hpp"
 #include "ecs/PlayerStats.hpp"
+#include "entities/Enemigo.hpp"
 #include "utils/AssetsUtils.hpp"
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
@@ -31,6 +32,22 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
         default: break;}
 
     };
+    const auto& enemySpawns = tablero_.getSpawnEnemies();
+
+    for (const Position& pos : enemySpawns)
+    {
+        enemigos_.push_back(
+            Enemigo(1, 3, pos.x, pos.y)
+        );
+
+        tablero_.addOccupant(
+            pos,
+            Occupant{
+                EntityType::Enemy,
+                static_cast<int>(enemigos_.size() - 1)
+            }
+        );
+    }
 }
 
 Engine::~Engine()
@@ -100,10 +117,18 @@ void* Engine::player_thread_process(void* arg)
 // logic_thread
 void* Engine::logic_thread(void* arg) {
     Engine* engine = static_cast<Engine*>(arg);
+    sf::Clock enemyClock;
 
     //Unicamente se usa para procesar eventos, teniendo pop una forma interna de dormirse
     while (engine -> running()) {
         std::optional<Evento> evento = engine -> popEvento();       // locks + unlocks internally
+
+        if (enemyClock.getElapsedTime().asSeconds() > 1.f)
+        {
+            engine->moveEnemies();
+            enemyClock.restart();
+        }
+
         if (evento.has_value())
         {
             engine -> procesarEvento(evento.value());             // called without mutex held
@@ -160,6 +185,10 @@ void Engine::procesarEvento(Evento& evento){
         case EventType::PlayerMove:
             onPlayerMove(evento);
             break;
+            
+        case EventType::EnemyMove:
+            onEnemyMove(evento);
+            break;
 
         /*
         case EventType::PlayerPlaceBomb:
@@ -182,9 +211,6 @@ void Engine::procesarEvento(Evento& evento){
             onChainExplosion(e);
             break;
 
-        case EventType::EnemyMove:
-            onEnemyMove(e);
-            break;
 
         case EventType::EnemyDeath:
             onEnemyDeath(e);
@@ -304,6 +330,75 @@ void Engine::onPlayerMove(Evento &evento)
 
     // Actualizar posicion interna del jugador
     player.setPosition(newPos.x, newPos.y);
+}
+
+void Engine::onEnemyMove(Evento& evento)
+{
+    int enemyId = evento.autor();
+
+    if (enemyId < 0 || enemyId >= enemigos_.size())
+        return;
+
+    Enemigo& enemigo = enemigos_[enemyId];
+
+    int dx = evento.data().mover.dx;
+    int dy = evento.data().mover.dy;
+
+    Position oldPos{
+        enemigo.getX(),
+        enemigo.getY()
+    };
+
+    Position newPos{
+        oldPos.x + dx,
+        oldPos.y + dy
+    };
+
+    if (!tablero_.isWalkable(newPos))
+        return;
+
+    bool moved = tablero_.moveOccupant(
+        oldPos,
+        newPos,
+        enemyId
+    );
+
+    if (!moved)
+        return;
+
+    enemigo.setPosition(
+        newPos.x,
+        newPos.y
+    );
+}
+
+void Engine::moveEnemies()
+{
+    for (int i = 0; i < enemigos_.size(); i++)
+    {
+        int dir = rand() % 4;
+
+        int dx = 0;
+        int dy = 0;
+
+        switch (dir)
+        {
+            case 0: dy = -1; break;
+            case 1: dy =  1; break;
+            case 2: dx = -1; break;
+            case 3: dx =  1; break;
+        }
+
+        pushEvento(
+            Evento::enemyMove(
+                i,
+                enemigos_[i].getX(),
+                enemigos_[i].getY(),
+                dx,
+                dy
+            )
+        );
+    }
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)

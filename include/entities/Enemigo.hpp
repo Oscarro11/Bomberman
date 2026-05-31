@@ -4,15 +4,15 @@ class Enemigo
 {
 private:
 
-    int tipo;
+    int tipo_;
 
-    bool recibioDano;
+    bool recibioDano_;
 
-    int alcance;
+    int alcance_;
 
-    int posX;
+    int posX_;
 
-    int posY;
+    int posY_;
 
 public:
 
@@ -21,4 +21,6 @@ public:
     int getX();
 
     int getY();
+
+    void setPosition(int x, int y);
 };

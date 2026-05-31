@@ -42,10 +42,24 @@ Evento Evento::manualEvent(EventType tipo, int autor, int objetivo, int posicion
     return Evento(tipo, autor, objetivo, posicionX, posicionY, data);
 } 
 
+Evento Evento::enemyMove(int enemyId, int posX, int posY, int dx, int dy)
+{
+    EventData data;
+    data.mover = {dx, dy};
+
+    return Evento(
+        EventType::EnemyMove,
+        enemyId,
+        -1,
+        posX,
+        posY,
+        data
+    );
+}
+
 /*
  Evento Evento::bombExplode(int bombId,  int posX,  int posY, int radio){}
  Evento Evento::chainExplosion(int bombId){}
- Evento Evento::enemyMove(int enemyId, int dx, int dy){}
  Evento Evento::enemyDeath(int enemyId,  int posX,  int posY){}
  Evento Evento::tileDestroyed(int posX, int posY){}
  Evento Evento::gameOver(){}
