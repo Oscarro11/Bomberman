@@ -25,9 +25,10 @@ class Engine : public IEngine
         std::queue<Evento> listaEventos_;
 
         sf::Time roundTimer_;
+        std::atomic<bool> paused_ = false;
         bool gameOver_;
+
         /*
-        vector<Player> listaPlayers;
         vector<Enemigo> listaEnemigos;
         vector<Bomba> listaBombas;
         vector<PowerUp> listaPowerUps;
@@ -53,9 +54,15 @@ class Engine : public IEngine
         static void* player_thread_process(void* arg);
         static void* logic_thread(void* arg);
 
+        void updateGameState();
+
         std::optional<Evento> popEvento();
         void procesarEvento(Evento& evento);
         void onPlayerMove(Evento& evento);
+
+        //void updateBombs(sf::Time dt);
+        //void updateExplosions(sf::Time dt);
+        //void updatePowerUps();
 
     public:
         Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores);
@@ -63,12 +70,20 @@ class Engine : public IEngine
 
         void start();
 
+        void update(sf::Time dt);
+
+        void pause();
+        void resume();
+        bool isPaused() const { return paused_.load(); }
+
         int numPlayers() const override{return jugadores_.size();}
 
         //Deberia cambiarse, o revisar de hacer una interfaz para que solo inputHandler y Engine puedan acceder
         Player& getPlayer(int id) {return jugadores_.at(id);}
 
         bool running() const override;
+        inline bool paused() const {return paused_;};
+
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         void pushEvento(const Evento& evento) override;
         RenderSnapshot makeRenderSnapshot();

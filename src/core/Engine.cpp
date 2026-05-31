@@ -6,7 +6,7 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     : running_(false)
     , inputHandler_(this)
     , tablero_(tableroSource)
-    , roundTimer_(sf::seconds(180.f))
+    , roundTimer_(sf::seconds(10.f))
     , gameOver_(false)
 {
     pthread_mutex_init(&eventMutex_, NULL);
@@ -77,6 +77,28 @@ void Engine::start()
     pthread_create(&logicThread_, nullptr, logic_thread, this);
 }
 
+void Engine::pause() { paused_.store(true);}
+
+void Engine::resume() 
+{ 
+    paused_.store(false);
+    pthread_mutex_lock(&eventMutex_);
+    pthread_cond_broadcast(&eventReady_);
+    pthread_mutex_unlock(&eventMutex_);
+}
+
+void Engine::update(sf::Time dt)
+{
+    if (gameOver_ || paused_) return;
+
+    roundTimer_ -= dt;
+
+    //updateBombs(dt);
+    //updateExplosions(dt);
+    //updatePowerUps(dt);
+    updateGameState();
+}
+
 bool Engine::running() const
 {
     return running_.load();
@@ -137,7 +159,7 @@ std::optional<Evento> Engine::popEvento()
 {
     pthread_mutex_lock(&eventMutex_);
     
-    while (listaEventos_.empty() && running_.load())
+    while ((listaEventos_.empty() || paused_.load()) && running_.load())
         pthread_cond_wait(&eventReady_, &eventMutex_);
 
     if (!running_.load())
@@ -203,6 +225,19 @@ void Engine::procesarEvento(Evento& evento){
             break;
             */
     }
+}
+
+void Engine::updateGameState()
+{
+    int alivePlayers = 0;
+
+    for (const Player& p : jugadores_)
+    {
+        if (p.vida() > 0) ++alivePlayers;
+    }
+
+    if (alivePlayers <= 1) gameOver_ = true;
+    if (roundTimer_ <= sf::Time::Zero) gameOver_ = true;
 }
 
 RenderSnapshot Engine::makeRenderSnapshot()
