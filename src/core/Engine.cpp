@@ -2,21 +2,24 @@
 #include "ecs/PlayerStats.hpp"
 #include "utils/AssetsUtils.hpp"
 
-Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
-    : inputHandler_(this)
+Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
+    : running_(false)
+    , inputHandler_(this)
     , tablero_(tableroSource)
+    , roundTimer_(sf::seconds(180.f))
+    , gameOver_(false)
 {
     pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
 
-    auto playersSpawn = tablero_.getSpawnPlayers();
+    const auto& playersSpawn = tablero_.getSpawnPlayers();
     
     for (int i=0; i < jugadores.size(); i++)
     {
-        PlayerStats* info = jugadores.at(i);
+        const PlayerStats& info = jugadores.at(i);
 
-        Player player = Player(i, 3, info -> maxBombas, info -> rangoExplosion,  info -> velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
+        Player player = Player(i, 3, info.maxBombas, info.rangoExplosion,  info.velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
         
         switch (i)
@@ -27,52 +30,60 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores)
         case 3: tablero_.addOccupant(Position{player.posX(), player.posY()}, Occupant{EntityType::Player4, i}); break;
         default: break;}
 
-        //Se crea un hilo por cada jugador
-        /*
-        pthread_t thread;
-        PlayerThreadArg* arg = new PlayerThreadArg{this, i};
-        
-        pthread_create(&thread, NULL, player_thread_process, arg);
-        threads.push_back(thread);
-        */
     };
-    
-
-    //Hilos de procesamiento de eventos y de inputs
-    pthread_create(&logicThread_, NULL, logic_thread, (void*) this);
 }
 
 Engine::~Engine()
 {
-    pthread_mutex_lock(&eventMutex_);
-
-    running_ = false;
-
-    pthread_cond_broadcast(&eventReady_);
-
-    pthread_mutex_unlock(&eventMutex_);
-
-    for (const pthread_t& thread : threads)
+    if (running_.load())
     {
-        pthread_join(thread, NULL);
-    }
-    
+        pthread_mutex_lock(&eventMutex_);
+        running_.store(false);
+        pthread_cond_broadcast(&eventReady_);
+        pthread_mutex_unlock(&eventMutex_);
 
-    pthread_join(logicThread_, NULL);
+        for (const pthread_t& thread : threads)
+        {
+            pthread_join(thread, NULL);
+        }
+
+        pthread_join(logicThread_, NULL);
+    }
 
     pthread_mutex_destroy(&eventMutex_);
     pthread_mutex_destroy(&inputMutex_);
     pthread_cond_destroy(&eventReady_);
 }
 
+void Engine::start()
+{
+    if (running_.load()) return;
+
+    running_.store(true);
+
+    // Player threads
+    for (int i = 0; i < jugadores_.size(); ++i)
+    {
+        pthread_t thread;
+
+        PlayerThreadArg* arg = new PlayerThreadArg{this, i};
+
+        pthread_create(&thread, nullptr, player_thread_process, arg);
+
+        threads.push_back(thread);
+    }
+
+    // Logic thread
+    pthread_create(&logicThread_, nullptr, logic_thread, this);
+}
+
 bool Engine::running() const
 {
-    return this -> running_;
+    return running_.load();
 }
 
 void* Engine::player_thread_process(void* arg)
 {
-    
     PlayerThreadArg* data = (PlayerThreadArg*) arg;
     Engine* engine = data -> engine;
     int playerId = data -> playerId;
@@ -104,12 +115,12 @@ void* Engine::logic_thread(void* arg) {
 
 void Engine::pushEvento(const Evento &evento)
 {
-    if (!running_)
+    if (!running_.load())
         return;
 
     pthread_mutex_lock(&eventMutex_);
 
-    if (!running_)
+    if (!running_.load())
     {
         pthread_mutex_unlock(&eventMutex_);
         return;
@@ -126,10 +137,10 @@ std::optional<Evento> Engine::popEvento()
 {
     pthread_mutex_lock(&eventMutex_);
     
-    while (listaEventos_.empty() && running_)
+    while (listaEventos_.empty() && running_.load())
         pthread_cond_wait(&eventReady_, &eventMutex_);
 
-    if (!running_)
+    if (!running_.load())
     {
         pthread_mutex_unlock(&eventMutex_);
         return std::nullopt;
@@ -198,8 +209,6 @@ RenderSnapshot Engine::makeRenderSnapshot()
 {
     RenderSnapshot snapshot;
 
-    //pthread_mutex_lock(&boardMutex_);
-
     int width  = tablero_.getWidth();
     int height = tablero_.getHeight();
 
@@ -225,8 +234,6 @@ RenderSnapshot Engine::makeRenderSnapshot()
             }
         }
     }
-
-    //pthread_mutex_unlock(&boardMutex_);
 
     // Copy player data
     for (const Player& p : jugadores_)

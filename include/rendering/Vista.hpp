@@ -17,13 +17,13 @@ class Vista {
         void handleEvent(const sf::Event& event);
         void render();
         bool shouldStartGame() const { return startGame_; }
-        std::vector<PlayerStats*> getPlayerStats() const;
+        std::vector<PlayerStats> getPlayerStats() const;
 
         void updateSnapshot(RenderSnapshot& snap);
         void transitionToGame();
 
     private:
-        std::vector<PlayerStats*> cachedStats_;
+        std::vector<PlayerStats> cachedStats_;
 
         sf::RenderWindow& window_;
         sf::Font&         font_;

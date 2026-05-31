@@ -110,18 +110,10 @@ std::string boardToString(
 
 void runTest()
 {
-    std::vector<PlayerStats*> playerStats;
+    std::vector<PlayerStats> playerStats;
 
-    PlayerStats* p1 = new PlayerStats{};
-    p1->maxBombas = 3;
-    p1->velocidad = 3;
-
-    PlayerStats* p2 = new PlayerStats{};
-    p2->maxBombas = 3;
-    p2->velocidad = 3;
-
-    playerStats.push_back(p1);
-    playerStats.push_back(p2);
+    playerStats.push_back(PlayerStats{3, 3, 3});
+    playerStats.push_back(PlayerStats{3, 3, 3});
 
     Engine engine(
         "mapa_test.txt",
@@ -235,9 +227,6 @@ void runTest()
 
         assert(false);
     }
-
-    delete p1;
-    delete p2;
 }
 
 int main()

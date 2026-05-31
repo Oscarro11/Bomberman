@@ -24,8 +24,8 @@ class Engine : public IEngine
         std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
 
-        sf::Time roundTimer_ = sf::seconds(180.f);
-        bool gameOver_ = false;
+        sf::Time roundTimer_;
+        bool gameOver_;
         /*
         vector<Player> listaPlayers;
         vector<Enemigo> listaEnemigos;
@@ -40,11 +40,11 @@ class Engine : public IEngine
         std::vector<pthread_t> playerThreads_;
 
         //Mutex para proteger el queue de eventos al ingresar uno nuevo
-        pthread_mutex_t eventMutex_;
+        mutable pthread_mutex_t eventMutex_;
 
         //Mutex para proteger el acceso a jugadores cuando un nuevo input se lee.
         //Hay que revisar si es necesario
-        pthread_mutex_t inputMutex_;
+        mutable pthread_mutex_t inputMutex_;
 
         //Condicion que se usa para indicar al hilo de procesamiento que hay un evento disponible
         pthread_cond_t eventReady_;
@@ -58,8 +58,10 @@ class Engine : public IEngine
         void onPlayerMove(Evento& evento);
 
     public:
-        Engine(std::string tableroSource, std::vector<PlayerStats*> jugadores);
+        Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores);
         virtual ~Engine();
+
+        void start();
 
         int numPlayers() const override{return jugadores_.size();}
 

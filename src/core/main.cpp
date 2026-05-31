@@ -28,8 +28,10 @@ int main() {
 
     // Hand off to game loop
     if (vista.shouldStartGame()) {
-        std::vector<PlayerStats*> playerInfo = vista.getPlayerStats();
+        std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
         Engine engine("mapa.txt", playerInfo);
+        engine.start();
+
         InputHandler inputHandler(&engine);
 
         vista.transitionToGame();
@@ -64,9 +66,7 @@ int main() {
             
             // Take snapshot under mutex
             RenderSnapshot snapshot;
-            //pthread_mutex_lock(&engine.eventMutex_);
             snapshot = engine.makeRenderSnapshot();
-            //pthread_mutex_unlock(&engine.eventMutex_);
 
             vista.updateSnapshot(snapshot);
 
@@ -75,7 +75,7 @@ int main() {
 
             sf::sleep(sf::milliseconds(16));
         }
+
     }
-    
     return 0;
 }

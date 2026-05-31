@@ -38,15 +38,16 @@ struct BoardCell{
 class Tablero {
     public:
         explicit Tablero(const std::string& source);
+        virtual ~Tablero();
+
         void loadMap(const std::string& source);
 
-        ~Tablero() = default;
         bool isWalkable(Position p) const;
 
         //For testing purposes
-        const std::vector<std::vector<BoardCell>>& matrix() const;
+        const std::vector<std::vector<BoardCell>> matrix() const;
 
-        const BoardCell& getCell(Position p) const;
+        const BoardCell getCell(Position p) const;
         void setTerrain(Position p, TileType terrain);
 
         void addOccupant(Position p, const Occupant& occ);
@@ -67,5 +68,5 @@ class Tablero {
         std::vector<Position> listaSpawnEnemies_;
         std::vector<Position> listaSpawnPowerUps_;
 
-        //pthread_mutex_t mutex_;
+        mutable pthread_mutex_t board_mutex_;
 };
