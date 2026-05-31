@@ -8,12 +8,11 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     , inputHandler_(this)
     , tablero_(tableroSource)
     , roundTimer_(sf::seconds(180.f))
+    , enemiesSystem_(enemigos_, eventBus_, tablero_)
     , gameOver_(false)
 {
-    pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_mutex_init(&enemiesMutex_, NULL);
-    pthread_cond_init(&eventReady_, NULL);
 
     const auto& playersSpawn = tablero_.getSpawnPlayers();
     
@@ -56,10 +55,8 @@ Engine::~Engine()
 {
     if (running_.load())
     {
-        pthread_mutex_lock(&eventMutex_);
         running_.store(false);
-        pthread_cond_broadcast(&eventReady_);
-        pthread_mutex_unlock(&eventMutex_);
+        eventBus_.stop();
 
         for (const pthread_t& thread : threads)
         {
@@ -69,10 +66,8 @@ Engine::~Engine()
         pthread_join(logicThread_, NULL);
     }
 
-    pthread_mutex_destroy(&eventMutex_);
     pthread_mutex_destroy(&inputMutex_);
     pthread_mutex_destroy(&enemiesMutex_);
-    pthread_cond_destroy(&eventReady_);
 }
 
 void Engine::start()
@@ -103,14 +98,8 @@ void Engine::update(sf::Time dt)
 
     roundTimer_ -= dt;
 
-    enemyMoveTimer_ += dt;
-    if (enemyMoveTimer_.asSeconds() >= ENEMY_MOVE_INTERVAL) {
-        pthread_mutex_lock(&enemiesMutex_);
-        moveEnemies();   // reads enemigos_ positions safely
-        pthread_mutex_unlock(&enemiesMutex_);
-        enemyMoveTimer_ = sf::Time::Zero;
-    }
-
+    enemiesSystem_.update(dt);
+    updatePlayersState();
     updateGameState();
 }
 
@@ -167,7 +156,10 @@ void Engine::procesarEvento(Evento& evento){
             break;
             
         case EventType::EnemyMove:
-            onEnemyMove(evento);
+            
+            auto damaged = enemiesSystem_.processMove(evento);
+
+            if (damaged) danioPlayer(*damaged);
             break;
             
             /*
@@ -208,6 +200,14 @@ void Engine::procesarEvento(Evento& evento){
             onRoundStart(evento);
             break;
             */
+    }
+}
+
+void Engine::updatePlayersState()
+{
+    for (Player& player : jugadores_)
+    {
+        player.actualizarInvencibilidad();
     }
 }
 
@@ -336,86 +336,8 @@ void Engine::onPlayerMove(Evento &evento)
     player.setPosition(newPos.x, newPos.y);
 }
 
-void Engine::onEnemyMove(Evento& evento)
-{
-    int enemyId = evento.autor();
-
-    // Validar ID del enemigo
-    if (enemyId < 0 || enemyId >= enemigos_.size())
-        return;
-
-    Enemigo& enemigo = enemigos_[enemyId];
-
-    int dx = evento.data().mover.dx;
-    int dy = evento.data().mover.dy;
-
-    Position oldPos{
-        enemigo.posX(),
-        enemigo.posY()
-    };
-
-    Position newPos{
-        oldPos.x + dx,
-        oldPos.y + dy
-    };
-
-    const BoardCell cell = tablero_.getCell(newPos);
-
-    for (const Occupant& occ : cell.occupants)
-    {
-    if (occ.type == EntityType::Player1 ||
-        occ.type == EntityType::Player2 ||
-        occ.type == EntityType::Player3 ||
-        occ.type == EntityType::Player4)
-    {
-        danioPlayer(occ.entityId);
-        return;
-    }
-    }
-
-    // Limites del tablero
-    if (!tablero_.isWalkable(newPos))
-        return;
-
-    // Mover occupant en tablero
-    bool moved = tablero_.moveOccupant(
-        oldPos,
-        newPos,
-        enemyId
-    );
-
-    // Si no se pudo mover, no actualizamos la posicion
-    if (!moved)
-        return;
-
-    //Actualizar posicion interna del enemigo
-    enemigo.setPosition(
-        newPos.x,
-        newPos.y
-    );
-}
-
-void Engine::moveEnemies() {
-    for (int i = 0; i < (int)enemigos_.size(); i++) {
-        Directions direction;
-        int num = rand() % 4;
-
-        switch (num){
-            case 0: direction = Directions::DOWN; break;
-            case 1: direction = Directions::UP; break;
-            case 2: direction = Directions::LEFT; break;
-            case 3: direction = Directions::RIGHT; break;
-            default: break;
-        }
-
-        // Enemy generates its own event
-        pushEvento(enemigos_[i].generarEventoMov(direction));
-    }
-}
-
 void Engine::danioPlayer(int playerId)
 {
-
     if (playerId < 0 || playerId >= jugadores_.size())
         return;
 

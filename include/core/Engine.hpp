@@ -15,6 +15,7 @@
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
 #include "systems/EventBus.hpp"
+#include "systems/EnemySystem.hpp"
 
 struct PlayerStats;
 
@@ -22,12 +23,12 @@ class Engine : public IEngine
 {
     private:
         EventBus eventBus_;
+        EnemySystem enemiesSystem_;
 
         std::atomic<bool> running_;
         Tablero tablero_;
         std::vector<Player> jugadores_;
         std::vector<Enemigo> enemigos_;
-        std::queue<Evento> listaEventos_;
 
         sf::Time roundTimer_;
         bool gameOver_;
@@ -39,15 +40,11 @@ class Engine : public IEngine
         vector<Bomba> listaBombas;
         vector<PowerUp> listaPowerUps;
         */
-
         pthread_t logicThread_;
 
         //Clase dedica a leer inputs, tiene su propio hilo
         InputHandler inputHandler_;
         std::vector<pthread_t> playerThreads_;
-
-        //Mutex para proteger el queue de eventos al ingresar uno nuevo
-        mutable pthread_mutex_t eventMutex_;
 
         //Mutex para proteger el acceso a jugadores cuando un nuevo input se lee.
         //Hay que revisar si es necesario
@@ -56,13 +53,11 @@ class Engine : public IEngine
         //Mutex para proteger el acceso a la lista de enemigos
         mutable pthread_mutex_t enemiesMutex_;
 
-        //Condicion que se usa para indicar al hilo de procesamiento que hay un evento disponible
-        pthread_cond_t eventReady_;
-
         std::vector<pthread_t> threads;
         static void* player_thread_process(void* arg);
         static void* logic_thread(void* arg);
 
+        void updatePlayersState();
         void updateGameState();
 
         void onPlayerMove(Evento& evento);
