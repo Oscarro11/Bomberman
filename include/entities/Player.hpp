@@ -4,6 +4,7 @@
 
 #include "entities/Personaje.hpp"
 #include "utils/Position.hpp"
+#include <SFML/System.hpp>
 
 //Forward declaration
 enum PowerUpType : int;
@@ -17,6 +18,8 @@ class Player : public Personaje
         int velocidad_;
         int spawnPointX_;
         int spawnPointY_; 
+        bool invencible_;
+        sf::Clock invencibleClock;
 
     public:
         Player(int id, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY);
@@ -43,6 +46,10 @@ class Player : public Personaje
             posX_ = x;
             posY_ = y;
         }
+
+        bool esInvencible() const;
+        void activarInvencibilidad();
+        void actualizarInvencibilidad();
 
         int maxBombas() const {return maxBombas_;};
         int restBombas() const {return restBombas_;};

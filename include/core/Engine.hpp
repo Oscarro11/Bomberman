@@ -57,7 +57,9 @@ class Engine : public IEngine
         void procesarEvento(Evento& evento);
         void onPlayerMove(Evento& evento);
         void onEnemyMove(Evento& evento);
+        void onPlayerDeath(Evento& evento);
         void moveEnemies();
+        void danioPlayer(int playerId);
 
     public:
         Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores);

@@ -67,3 +67,24 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
         default: break;
     }
 }
+
+bool Player::esInvencible() const
+{
+    return invencible_;
+}
+
+void Player::activarInvencibilidad()
+{
+    invencible_ = true;
+    invencibleClock.restart();
+}
+
+void Player::actualizarInvencibilidad()
+{
+    // El jugador es invencible por 2 segundos despues de recibir daño
+    if (invencible_ &&
+        invencibleClock.getElapsedTime().asSeconds() >= 2.f)
+    {
+        invencible_ = false;
+    }
+}

@@ -129,9 +129,14 @@ void* Engine::logic_thread(void* arg) {
             enemyClock.restart();
         }
 
+        for (Player& p : engine->jugadores_)
+        {
+            p.actualizarInvencibilidad();
+        }
+
         if (evento.has_value())
         {
-            engine -> procesarEvento(evento.value());             // called without mutex held
+            engine->procesarEvento(evento.value());             // called without mutex held
         }
     }
 
@@ -189,43 +194,43 @@ void Engine::procesarEvento(Evento& evento){
         case EventType::EnemyMove:
             onEnemyMove(evento);
             break;
-
-        /*
+            
+            /*
+            case EventType::PlayerDeath:
+                onPlayerDeath(evento);
+                break;
         case EventType::PlayerPlaceBomb:
-            onPlayerPlaceBomb(e);
+            onPlayerPlaceBomb(evento);
             break;
 
-        case EventType::PlayerDeath:
-            onPlayerDeath(e);
-            break;
 
         case EventType::PlayerPickPowerUp:
-            onPlayerPickPowerUp(e);
+            onPlayerPickPowerUp(evento);
             break;
 
         case EventType::BombExplode:
-            onBombExplode(e);
+            onBombExplode(evento);
             break;
 
         case EventType::ChainExplosion:
-            onChainExplosion(e);
+            onChainExplosion(evento);
             break;
 
 
         case EventType::EnemyDeath:
-            onEnemyDeath(e);
+            onEnemyDeath(evento);
             break;
 
         case EventType::TileDestroyed:
-            onTileDestroyed(e);
+            onTileDestroyed(evento);
             break;
 
         case EventType::GameOver:
-            onGameOver(e);
+            onGameOver(evento);
             break;
 
         case EventType::RoundStart:
-            onRoundStart(e);
+            onRoundStart(evento);
             break;
             */
     }
@@ -301,6 +306,17 @@ void Engine::onPlayerMove(Evento &evento)
         oldPos.y + dy
     };
 
+    const BoardCell cell = tablero_.getCell(newPos);
+
+    for (const Occupant& occ : cell.occupants)
+    {
+        if (occ.type == EntityType::Enemy)
+        {
+            danioPlayer(player.id());
+            return;
+        }
+    }
+
     // Limites del tablero
     if (newPos.x < 0 ||
         newPos.y < 0 ||
@@ -336,6 +352,7 @@ void Engine::onEnemyMove(Evento& evento)
 {
     int enemyId = evento.autor();
 
+    // Validar ID del enemigo
     if (enemyId < 0 || enemyId >= enemigos_.size())
         return;
 
@@ -354,18 +371,36 @@ void Engine::onEnemyMove(Evento& evento)
         oldPos.y + dy
     };
 
+    const BoardCell cell = tablero_.getCell(newPos);
+
+    for (const Occupant& occ : cell.occupants)
+    {
+    if (occ.type == EntityType::Player1 ||
+        occ.type == EntityType::Player2 ||
+        occ.type == EntityType::Player3 ||
+        occ.type == EntityType::Player4)
+    {
+        danioPlayer(occ.entityId);
+        return;
+    }
+    }
+
+    // Limites del tablero
     if (!tablero_.isWalkable(newPos))
         return;
 
+    // Mover occupant en tablero
     bool moved = tablero_.moveOccupant(
         oldPos,
         newPos,
         enemyId
     );
 
+    // Si no se pudo mover, no actualizamos la posicion
     if (!moved)
         return;
 
+    //Actualizar posicion interna del enemigo
     enemigo.setPosition(
         newPos.x,
         newPos.y
@@ -389,6 +424,7 @@ void Engine::moveEnemies()
             case 3: dx =  1; break;
         }
 
+
         pushEvento(
             Evento::enemyMove(
                 i,
@@ -401,6 +437,48 @@ void Engine::moveEnemies()
     }
 }
 
+void Engine::danioPlayer(int playerId)
+{
+
+    if (playerId < 0 || playerId >= jugadores_.size())
+        return;
+
+    Player& player = jugadores_[playerId];
+
+    if (player.esInvencible())
+        return;
+
+    player.activarInvencibilidad();
+
+    auto deathEvent = player.recibirDanio(player);
+    // Si el jugador muere, se procesa un evento de muerte. De lo contrario, se respawnea en su posicion inicial
+    if (deathEvent.has_value())
+    {
+        pushEvento(deathEvent.value());
+    }
+    // Si el jugador no muere, se mueve a su posicion de spawn
+    else
+    {
+        Position oldPos = player.position();
+
+        Position spawnPos{
+            player.spawnPointX(),
+            player.spawnPointY()
+        };
+        
+        tablero_.moveOccupant(
+            oldPos,
+            spawnPos,
+            player.id()
+        );
+
+        player.setPosition(
+            spawnPos.x,
+            spawnPos.y
+        );
+    }
+    
+}
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
 {
     pthread_mutex_lock(&inputMutex_);
