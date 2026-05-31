@@ -135,17 +135,15 @@ void* Engine::player_thread_process(void* arg)
 }
 
 // logic_thread
-void* Engine::logic_thread(void* arg) {
+void* Engine::logic_thread(void* arg)
+{
     Engine* engine = static_cast<Engine*>(arg);
 
-    while (engine->running()) {
-        std::optional<Evento> evento = engine->popEvento();
+    while (engine->running())
+    {
+        auto evento = engine -> popEvento();
 
-        for (Player& p : engine->jugadores_)
-            p.actualizarInvencibilidad();
-
-        if (evento.has_value())
-            engine->procesarEvento(evento.value());
+        if (evento) engine -> procesarEvento(*evento);
     }
 
     return nullptr;
@@ -153,42 +151,12 @@ void* Engine::logic_thread(void* arg) {
 
 void Engine::pushEvento(const Evento &evento)
 {
-    if (!running_.load())
-        return;
-
-    pthread_mutex_lock(&eventMutex_);
-
-    if (!running_.load())
-    {
-        pthread_mutex_unlock(&eventMutex_);
-        return;
-    }
-
-    listaEventos_.push(evento);
-
-    pthread_cond_signal(&eventReady_);
-    pthread_mutex_unlock(&eventMutex_);
+    eventBus_.push(evento);
 }
 
 std::optional<Evento> Engine::popEvento()
 {
-    pthread_mutex_lock(&eventMutex_);
-    
-    while (listaEventos_.empty() && running_.load())
-        pthread_cond_wait(&eventReady_, &eventMutex_);
-
-    if (!running_.load())
-    {
-        pthread_mutex_unlock(&eventMutex_);
-        return std::nullopt;
-    }
-    else{
-        Evento evento = listaEventos_.front();
-        listaEventos_.pop();
-
-        pthread_mutex_unlock(&eventMutex_);
-        return evento;
-    }
+    return eventBus_.pop();
 }
 
 void Engine::procesarEvento(Evento& evento){

@@ -14,12 +14,15 @@
 #include "entities/Enemigo.hpp"
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
+#include "systems/EventBus.hpp"
 
 struct PlayerStats;
 
 class Engine : public IEngine
 {
     private:
+        EventBus eventBus_;
+
         std::atomic<bool> running_;
         Tablero tablero_;
         std::vector<Player> jugadores_;
@@ -30,7 +33,7 @@ class Engine : public IEngine
         bool gameOver_;
 
         sf::Time enemyMoveTimer_ = sf::Time::Zero;
-        static constexpr float ENEMY_MOVE_INTERVAL = 2.4f;   // seconds between moves
+        static constexpr float ENEMY_MOVE_INTERVAL = 0.8f;   // seconds between moves
 
         /*
         vector<Bomba> listaBombas;
@@ -62,8 +65,6 @@ class Engine : public IEngine
 
         void updateGameState();
 
-        std::optional<Evento> popEvento();
-        void procesarEvento(Evento& evento);
         void onPlayerMove(Evento& evento);
         void onEnemyMove(Evento& evento);
         void onPlayerDeath(Evento& evento);
@@ -84,13 +85,16 @@ class Engine : public IEngine
 
         int numPlayers() const override{return jugadores_.size();}
 
+        void pushEvento(const Evento& e);
+        std::optional<Evento> popEvento();
+        void procesarEvento(Evento& evento);
+
         //Deberia cambiarse, o revisar de hacer una interfaz para que solo inputHandler y Engine puedan acceder
         Player& getPlayer(int id) {return jugadores_.at(id);}
 
         bool running() const override;
 
         void handleInput(sf::Keyboard::Key key, int playerId) override;
-        void pushEvento(const Evento& evento) override;
         RenderSnapshot makeRenderSnapshot();
 };
 
