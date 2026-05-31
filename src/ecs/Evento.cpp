@@ -66,10 +66,25 @@ Evento Evento::bombExplode(int bombId, int creador, int posX, int posY, int radi
     return Evento(EventType::BombExplode,bombId,-1,posX,posY,data);
 }
 
+Evento Evento::tileDestroyed(int posX, int posY)
+{
+    return Evento(
+        EventType::TileDestroyed,
+        -1,
+        -1,
+        posX,
+        posY,
+        {}
+    );
+}
+
+Evento Evento::enemyDeath(int enemyId,int killerId,int posX,int posY)
+{
+    return Evento(EventType::EnemyDeath,killerId,enemyId,posX,posY,{});
+}
+
 /*
  Evento Evento::chainExplosion(int bombId){}
- Evento Evento::enemyDeath(int enemyId,  int posX,  int posY){}
- Evento Evento::tileDestroyed(int posX, int posY){}
  Evento Evento::gameOver(){}
  Evento Evento::roundStart(){}
  */

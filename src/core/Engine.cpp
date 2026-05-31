@@ -251,7 +251,18 @@ void Engine::procesarEvento(Evento& evento){
         case EventType::BombExplode:
             onBombExplode(evento);
             break;
-            /*
+
+        case EventType::TileDestroyed:
+            onTileDestroyed(evento);
+            break;
+        
+        
+        case EventType::EnemyDeath:
+            onEnemyDeath(evento);
+            break;
+
+
+        /*
             case EventType::PlayerDeath:
                 onPlayerDeath(evento);
                 break;
@@ -267,13 +278,8 @@ void Engine::procesarEvento(Evento& evento){
             break;
 
 
-        case EventType::EnemyDeath:
-            onEnemyDeath(evento);
-            break;
 
-        case EventType::TileDestroyed:
-            onTileDestroyed(evento);
-            break;
+        
 
         case EventType::GameOver:
             onGameOver(evento);
@@ -435,6 +441,9 @@ void Engine::onEnemyMove(Evento& evento)
 
     Enemigo& enemigo = enemigos_[enemyId];
 
+    if (!enemigo.isAlive())
+        return;
+
     int dx = evento.data().mover.dx;
     int dy = evento.data().mover.dy;
 
@@ -486,6 +495,10 @@ void Engine::onEnemyMove(Evento& evento)
 
 void Engine::moveEnemies() {
     for (int i = 0; i < (int)enemigos_.size(); i++) {
+
+        if (!enemigos_[i].isAlive())
+            continue;
+            
         Directions direction;
         int num = rand() % 4;
 
@@ -605,6 +618,18 @@ void Engine::onBombExplode(Evento& evento)
         bombId
     );
 
+    createExplosion(pos,creador);
+
+    int radio = evento.data().explosion.radio;
+    explodeDirection(pos, creador,  1,  0, radio); // derecha
+    explodeDirection(pos, creador, -1,  0, radio); // izquierda
+    explodeDirection(pos, creador,  0, -1, radio); // arriba
+    explodeDirection(pos, creador,  0,  1, radio); // abajo
+
+}
+
+void Engine::createExplosion(Position pos, int creador)
+{
     int explosionId = nextExplosionId_++;
 
     explosiones_.push_back(
@@ -612,9 +637,28 @@ void Engine::onBombExplode(Evento& evento)
             explosionId,
             pos.x,
             pos.y,
-            sf::seconds(1.f)
+            sf::seconds(2.f) //Duracion de la explosion, pendiente de ajustar
         )
     );
+
+    BoardCell cell = tablero_.getCell(pos);
+
+    for (const Occupant& occ : cell.occupants)
+    {
+        if (occ.type == EntityType::Enemy)
+        {
+            Enemigo& enemigo = enemigos_[occ.entityId];
+
+            auto deathEvent = enemigo.recibirDanio(jugadores_[creador]);
+
+            if (deathEvent.has_value())
+            {
+                pushEvento(
+                    deathEvent.value()
+                );
+            }
+        }
+    }
 
     tablero_.addOccupant(
         pos,
@@ -622,6 +666,81 @@ void Engine::onBombExplode(Evento& evento)
             EntityType::Explosion,
             explosionId
         }
+    );
+}
+
+void Engine::explodeDirection(
+    Position origen,
+    int creador,
+    int dx,
+    int dy,
+    int radio
+)
+{
+    for (int i = 1; i <= radio; i++)
+    {
+        Position p{
+            origen.x + dx * i,
+            origen.y + dy * i
+        };
+
+        if (p.x < 0 ||
+            p.y < 0 ||
+            p.x >= tablero_.getWidth() ||
+            p.y >= tablero_.getHeight())
+        {
+            break;
+        }
+
+        BoardCell cell = tablero_.getCell(p);
+        
+        if (cell.terrainType == TileType::Wall)
+        {
+            break;
+        }
+
+        createExplosion(p, creador);
+
+        if (cell.terrainType == TileType::Breakable)
+        {
+            
+            pushEvento(
+                Evento::tileDestroyed(
+                    p.x,
+                    p.y
+                )
+            );
+            break;
+        }
+        
+    }
+}
+
+void Engine::onTileDestroyed(Evento& evento)
+{
+    Position pos{
+        evento.posicionX(),
+        evento.posicionY()
+    };
+
+    tablero_.setTerrain(
+        pos,
+        TileType::Floor
+    );
+}
+
+void Engine::onEnemyDeath(Evento& evento)
+{
+    int enemyId = evento.objetivo();
+
+    Position pos{
+        evento.posicionX(),
+        evento.posicionY()
+    };
+
+    tablero_.removeOccupant(
+        pos,
+        enemyId
     );
 }
 

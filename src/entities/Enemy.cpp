@@ -27,6 +27,18 @@ Evento Enemigo::generarEventoMov(Directions direction) {
 }
 
 std::optional<Evento> Enemigo::recibirDanio(const Personaje& atacante)
-{  
+{
+    vida_--;
+
+    if (vida_ <= 0)
+    {
+        return Evento::enemyDeath(
+            id_,
+            atacante.id(),
+            posX_,
+            posY_
+        );
+    }
+
     return std::nullopt;
 }

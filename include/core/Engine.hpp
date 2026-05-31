@@ -75,8 +75,12 @@ class Engine : public IEngine
         void onPlayerDeath(Evento& evento);
         void onPlayerPlaceBomb(Evento& evento);
         void onBombExplode(Evento& evento);
+        void createExplosion(Position pos, int autor);
+        void explodeDirection(Position origen,int creador,int dx,int dy,int radio);
         void moveEnemies();
         void danioPlayer(int playerId);
+        void onTileDestroyed(Evento& evento);
+        void onEnemyDeath(Evento& evento);
 
         //void updateBombs(sf::Time dt);
         //void updateExplosions(sf::Time dt);

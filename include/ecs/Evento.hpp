@@ -41,11 +41,11 @@ class Evento
         static Evento playerPickPowerUp(int autorId, int powerUpId, int posX, int posY, int powerUpTipo);
         static Evento enemyMove(int enemyId, int posX, int posY, int dx, int dy);
         static Evento bombExplode(int bombId, int creador, int posX, int posY, int radio);
+        static Evento tileDestroyed(int posX, int posY);
+        static Evento enemyDeath(int enemyId, int autorId, int posX, int posY);
         
         /*
         static Evento chainExplosion(int bombId);
-        static Evento enemyDeath(int enemyId,  int posX,  int posY);
-        static Evento tileDestroyed(int posX, int posY);
         static Evento gameOver();
         static Evento roundStart(); 
         */
