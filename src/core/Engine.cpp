@@ -20,7 +20,7 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     {
         const PlayerStats& info = jugadores.at(i);
 
-        Player player = Player(i, 3, info.maxBombas, info.rangoExplosion,  info.velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
+        Player player = Player(i, info.nombre, 3, info.maxBombas, info.rangoExplosion,  info.velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
         
         switch (i)
@@ -258,6 +258,7 @@ RenderSnapshot Engine::makeRenderSnapshot()
     for (const Player& p : jugadores_)
     {
         snapshot.players.push_back(PlayerData{
+            p.nombre(),
             p.id(),
             p.vida(),
             p.maxBombas(),

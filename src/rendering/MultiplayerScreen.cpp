@@ -10,13 +10,55 @@ MultiplayerConfigurationScreen::MultiplayerConfigurationScreen()
     syncSelectedFlags();
 }
 
-Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
-    switch (key) {
+char MultiplayerConfigurationScreen::keyToChar(sf::Keyboard::Key key) const {
+    // Letters
+    if (key >= sf::Keyboard::A && key <= sf::Keyboard::Z)
+        return 'A' + (key - sf::Keyboard::A);
 
-        // --- Player selection ---
+    // Numbers
+    if (key >= sf::Keyboard::Num0 && key <= sf::Keyboard::Num9)
+        return '0' + (key - sf::Keyboard::Num0);
+
+    return 0;   // non-printable — ignore
+}
+
+Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
+    // ── Typing mode — capture name characters ──────────
+    if (typingName_) {
+        PlayerConfig& p = players_[activePlayer_];
+
+        if (key == sf::Keyboard::Return || key == sf::Keyboard::Tab) {
+            // Confirm name
+            typingName_    = false;
+            selectedAttr_  = 1;   // move to next attr after confirming
+            return Screen::STAY;
+        }
+
+        if (key == sf::Keyboard::BackSpace) {
+            if (!p.stats.nombre.empty())
+                p.stats.nombre.pop_back();
+            return Screen::STAY;
+        }
+
+        if (key == sf::Keyboard::Escape) {
+            typingName_ = false;
+            return Screen::STAY;
+        }
+
+        // Append printable character if within length limit
+        if ((int)p.stats.nombre.size() < MAX_NAME_LEN) {
+            char c = keyToChar(key);
+            if (c != 0)
+                p.stats.nombre += c;
+        }
+
+        return Screen::STAY;
+    }
+
+    // ── Normal navigation ───────────────────────────────
+    switch (key) {
         case sf::Keyboard::A:
-            activePlayer_ = (activePlayer_ + players_.size() - 1)
-                            % players_.size();
+            activePlayer_ = (activePlayer_ + players_.size() - 1) % players_.size();
             syncSelectedFlags();
             break;
 
@@ -25,21 +67,32 @@ Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
             syncSelectedFlags();
             break;
 
-        // --- Attribute selection ---
         case sf::Keyboard::Tab:
             selectedAttr_ = (selectedAttr_ + 1) % NUM_ATTRS;
             break;
 
-        // --- Change attribute value ---
         case sf::Keyboard::W:
+            if (selectedAttr_ == 0) break;   // name not changed with W/S
             incrementAttr(players_[activePlayer_], selectedAttr_);
             break;
 
         case sf::Keyboard::S:
+            if (selectedAttr_ == 0) break;
             decrementAttr(players_[activePlayer_], selectedAttr_);
             break;
 
-        // --- Add / remove players ---
+        // Enter on name field → start typing
+        case sf::Keyboard::Return:
+            if (selectedOption_ == 0 && selectedAttr_ == 0) {
+                typingName_ = true;
+                break;
+            }
+            if (selectedOption_ == 0 && selectedAttr_ != 0)
+                return new StartScreen();
+            if (selectedOption_ == 1)
+                return new MainMenuScreen();
+            break;
+
         case sf::Keyboard::Q:
             if ((int)players_.size() < MAX_PLAYERS) {
                 players_.push_back(PlayerConfig{});
@@ -56,25 +109,15 @@ Screen* MultiplayerConfigurationScreen::handleInput(sf::Keyboard::Key key) {
             }
             break;
 
-        // --- Bottom button selection ---
         case sf::Keyboard::Left:
         case sf::Keyboard::Right:
             selectedOption_ = (selectedOption_ + 1) % 2;
             break;
 
-        // --- Confirm ---
-        case sf::Keyboard::Return:
-            if (selectedOption_ == 0)
-                return new StartScreen;    // → launches Engine
-            if (selectedOption_ == 1)
-                return new MainMenuScreen();  // → back to main
-
-        // --- Back ---
         case sf::Keyboard::Escape:
             return new MainMenuScreen();
 
-        default:
-            break;
+        default: break;
     }
 
     return Screen::STAY;
@@ -111,7 +154,7 @@ void MultiplayerConfigurationScreen::render(sf::RenderWindow& window,
 
     // Advance past the card height
     row = cardStartRow + CARD_HEIGHT;
-    row++;
+    row += 2;
 
     // Navigation hints
     drawLine(window, font, " [A/D] switch player   [W/S] change value", row++, COL_DIM);
@@ -177,18 +220,40 @@ void MultiplayerConfigurationScreen::drawPlayerCard(sf::RenderWindow &window,
     drawLineAt(window, font, " |      / \\       |", row++, startCol, spriteColor);
     drawLineAt(window, font, " +----------------+", row++, startCol, COL_BORDER);
 
+    // Name of player
+    // Name field — fixed MAX_NAME_LEN width
+    bool nameActive  = cfg.isSelected && selectedAttr == 0;
+    bool nameTyping  = nameActive && typingName_;
+
+    // Build fixed-width display string
+    std::string nameDisplay = cfg.stats.nombre;
+    if (nameTyping) nameDisplay += "_";          // append cursor while typing
+    nameDisplay.resize(MAX_NAME_LEN, ' ');       // pad or truncate to fixed width
+
+    drawSegmentsAt(window, font, {
+        { " | ",                     COL_BORDER              },
+        { nameActive ? "> " : "  ",  COL_SELECTED            },
+        { "Name: ",                  nameActive
+                                ? COL_SELECTED : COL_DIM  },
+        { nameDisplay,               nameTyping  ? COL_VALUE
+                                : nameActive  ? COL_DEFAULT
+                                                : COL_DIM   },
+        { nameActive ? " <" : "  ",  COL_SELECTED            },
+        { "  |",                     COL_BORDER              },
+    }, row++, startCol);
+
     // Attribute lines — mixed color per segment
     drawAttrLine(window, font, "Bombas", cfg.stats.maxBombas,
-                 cfg.isSelected, selectedAttr == 0,
-                 row++, startCol);
-    drawAttrLine(window, font, "Rango ", cfg.stats.rangoExplosion,
                  cfg.isSelected, selectedAttr == 1,
                  row++, startCol);
-    drawAttrLine(window, font, "Vel   ", (int)cfg.stats.velocidad,
+    drawAttrLine(window, font, "Rango ", cfg.stats.rangoExplosion,
                  cfg.isSelected, selectedAttr == 2,
                  row++, startCol);
+    drawAttrLine(window, font, "Vel   ", (int)cfg.stats.velocidad,
+                 cfg.isSelected, selectedAttr == 3,
+                 row++, startCol);
 
-    drawLineAt(window, font, " +----------------+", row, startCol, COL_BORDER);
+    drawLineAt(window, font, " +----------------+", row++, startCol, COL_BORDER);
 }
 
 void MultiplayerConfigurationScreen::drawAttrLine(sf::RenderWindow& window,
@@ -228,16 +293,16 @@ void MultiplayerConfigurationScreen::syncSelectedFlags() {
 
 void MultiplayerConfigurationScreen::incrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      ( int) MAX_BOMBAS);  break;
-        case 1: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  ( int) MAX_RANGO);  break;
-        case 2: p.stats.velocidad      = std::min(p.stats.velocidad + 1,     MAX_VEL);    break;
+        case 1: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      ( int) MAX_BOMBAS);  break;
+        case 2: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  ( int) MAX_RANGO);  break;
+        case 3: p.stats.velocidad      = std::min(p.stats.velocidad + 1,     MAX_VEL);    break;
     }
 }
 
 void MultiplayerConfigurationScreen::decrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
-        case 0: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      ( int) MIN_BOMBAS); break;
-        case 1: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, ( int) MIN_RANGO); break;
-        case 2: p.stats.velocidad      = std::max(p.stats.velocidad - 1,    MIN_VEL);   break;
+        case 1: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      ( int) MIN_BOMBAS); break;
+        case 2: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, ( int) MIN_RANGO); break;
+        case 3: p.stats.velocidad      = std::max(p.stats.velocidad - 1,    MIN_VEL);   break;
     }
 }

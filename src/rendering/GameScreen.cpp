@@ -135,7 +135,7 @@ void GameScreen::renderPlayerCards(sf::RenderWindow& window,
         // Row 1 — player name
         drawSegmentsAt(window, font, {
             { "| ",                          COL_BORDER },
-            { "P" + std::to_string(i + 1)
+            { p.nombre.length() > 0 ? p.nombre : "P" + std::to_string(i + 1)
               + std::string(18, ' '),         col        },
             { "|",                            COL_BORDER },
         }, startRow + 1, startCol);

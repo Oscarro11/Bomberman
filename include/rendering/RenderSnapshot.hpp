@@ -1,10 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "utils/GameConstants.hpp"
 
 struct PlayerData{
+    std::string nombre;
     int id, vida, maxBombas, bombsPlaced, rangoExplosion, velocidad;
 };
 

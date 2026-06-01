@@ -112,8 +112,8 @@ void runTest()
 {
     std::vector<PlayerStats> playerStats;
 
-    playerStats.push_back(PlayerStats{3, 3, 3});
-    playerStats.push_back(PlayerStats{3, 3, 3});
+    playerStats.push_back(PlayerStats{"", 3, 3, 3});
+    playerStats.push_back(PlayerStats{"", 3, 3, 3});
 
     Engine engine(
         "mapa_test.txt",

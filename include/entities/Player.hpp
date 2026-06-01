@@ -1,10 +1,10 @@
 #pragma once
 
 #include <optional>
+#include <SFML/System.hpp>
 
 #include "entities/Personaje.hpp"
 #include "utils/Position.hpp"
-#include <SFML/System.hpp>
 
 //Forward declaration
 enum PowerUpType : int;
@@ -12,17 +12,22 @@ enum PowerUpType : int;
 class Player : public Personaje
 {
     private:
+        std::string nombre_;
+        int puntaje_;
+
         int maxBombas_;
         int restBombas_;
         int rangoExplosion_;
         int velocidad_;
+
         int spawnPointX_;
-        int spawnPointY_; 
+        int spawnPointY_;
+
         bool invencible_;
         sf::Clock invencibleClock;
 
     public:
-        Player(int id, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY);
+        Player(int id, std::string nombre, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY);
         virtual ~Player() = default;
 
         Evento generarEventoMov(Directions direction) override;
@@ -35,6 +40,7 @@ class Player : public Personaje
         void activarInvencibilidad();
         void actualizarInvencibilidad();
 
+        std::string nombre() const {return nombre_;}
         int maxBombas() const {return maxBombas_;};
         int restBombas() const {return restBombas_;};
         int rangoExplosion() const {return rangoExplosion_;};

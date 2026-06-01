@@ -11,17 +11,22 @@ class MultiplayerConfigurationScreen : public Screen {
         Screen* handleInput(sf::Keyboard::Key key) override;
         void render(sf::RenderWindow& window, const sf::Font& font) const override;
 
+        char keyToChar(sf::Keyboard::Key key) const;
+
         // Vista reads this when transitioning to the game
         std::vector<const PlayerConfig*> getPlayerConfigs() const;
 
     private:
-        static constexpr int NUM_ATTRS  = 3;
+        static constexpr int NUM_ATTRS  = 4; // 0=nombre, 1=bombas, 2=rango, 3=vel
         static constexpr int MAX_BOMBAS = 8;
         static constexpr int MIN_BOMBAS = 1;
         static constexpr int MAX_RANGO  = 6;
         static constexpr int MIN_RANGO  = 1;
         static constexpr int MAX_VEL = 5;
         static constexpr int MIN_VEL = 1;
+
+        bool typingName_ = false;
+        static constexpr int MAX_NAME_LEN = 5;
 
         std::vector<PlayerConfig> players_  = std::vector<PlayerConfig>(MIN_PLAYERS);
         int                       activePlayer_ = 0;

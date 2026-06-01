@@ -6,7 +6,8 @@
 
 //These test requiere that the Evento constructor is public
 void runTest(){
-    Player player = Player(1, 3, 3, 3, 7, 5, 5);
+    std::string name = "Marco";
+    Player player = Player(1, name, 3, 3, 3, 7, 5, 5);
 
     std::optional<Evento> temp = player.colocarBomba();
     Evento eventManual = Evento::manualEvent(EventType::PlayerPlaceBomb, 1, -1, 5, 5, {});

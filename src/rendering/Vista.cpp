@@ -46,7 +46,7 @@ void Vista::handleEvent(const sf::Event& event)
     {
         auto* mpScreen = dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_);
         for (const PlayerConfig* config : mpScreen->getPlayerConfigs()) {
-            cachedStats_.push_back(PlayerStats{config -> stats.maxBombas, config -> stats.rangoExplosion, config -> stats.velocidad});
+            cachedStats_.push_back(PlayerStats{config -> stats.nombre, config -> stats.maxBombas, config -> stats.rangoExplosion, config -> stats.velocidad});
         }
 
         startGame_ = true;
