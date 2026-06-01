@@ -6,12 +6,20 @@ Player::Player(int id, unsigned int vida, unsigned int maxBombas, double velocid
     this -> id_ = id;
     this -> vida_ = vida;
     this -> maxBombas_ = maxBombas;
+    this -> rangoExplosion_ = 1;
     this -> velocidad_ = velocidad;
 
     this -> spawnPointX_ = spawnPointX;
     this -> posX_ = spawnPointX;
     this -> spawnPointY_ = spawnPointY;
     this -> posY_ = spawnPointY;
+
+    sem_init(&semBombas_, 0, maxBombas);
+}
+
+Player::~Player()
+{
+    sem_destroy(&semBombas_);
 }
 
 std::optional<Evento> Player::recibirDanio(const Personaje& atacante)
@@ -47,9 +55,9 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
 {
     switch (tipo)
     {
-        case maxBomb: this -> maxBombas_ += cantidad;
-        case explosionRange: this -> rangoExplosion_ += cantidad;
-        case speed: this -> velocidad_ += cantidad;
+        case maxBomb:        this->maxBombas_ += cantidad;      break;
+        case explosionRange: this->rangoExplosion_ += cantidad; break;
+        case speed:          this->velocidad_ += cantidad;      break;
         default: break;
     }
 }

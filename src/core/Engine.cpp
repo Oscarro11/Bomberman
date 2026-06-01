@@ -3,7 +3,7 @@
 std::vector<Player> Engine::jugadores_;
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores)
-    : inputHandler_(this)
+    : running_(true), inputHandler_(this)
 {
     pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
@@ -135,10 +135,11 @@ void Engine::procesarEvento(Evento& evento){
             onPlayerMove(evento);
             break;
 
-        /*
         case EventType::PlayerPlaceBomb:
-            onPlayerPlaceBomb(e);
+            onPlayerPlaceBomb(evento);
             break;
+
+        /*
 
         case EventType::PlayerDeath:
             onPlayerDeath(e);
@@ -177,6 +178,33 @@ void Engine::procesarEvento(Evento& evento){
             break;
             */
     }
+}
+
+void Engine::onPlayerPlaceBomb(Evento& evento)
+{
+    Player& player = jugadores_[evento.autor()];
+
+    // Intenta tomar una ranura del semáforo; si el jugador ya alcanzó su límite, no hace nada
+    if (sem_trywait(player.getSem()) != 0)
+        return;
+
+    static int bombIdCounter = 0;
+    int bombId = bombIdCounter++;
+
+    auto bomba = std::make_unique<Bomba>(
+        bombId,
+        evento.posicionX(),
+        evento.posicionY(),
+        player.rangoExplosion(),
+        3000,
+        this,
+        player.getSem()
+    );
+    bomba->iniciar();
+    bombas_.push_back(std::move(bomba));
+
+    printf("Jugador %i coloco bomba %i en (%i,%i)\n",
+        evento.autor(), bombId, evento.posicionX(), evento.posicionY());
 }
 
 void Engine::onPlayerMove(Evento &evento)
