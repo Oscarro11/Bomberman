@@ -10,6 +10,7 @@ Enemigo::Enemigo(int id, int tipo, int alcance, int x, int y)
     this -> posY_ = y;
     this -> vida_ = 1;
 
+    this -> alive_ = true;
     this -> recibioDanio_ = false;
 }
 
@@ -27,6 +28,20 @@ Evento Enemigo::generarEventoMov(Directions direction) {
 }
 
 std::optional<Evento> Enemigo::recibirDanio(const Personaje& atacante)
-{  
+{
+    vida_--;
+
+    if (vida_ <= 0)
+    {
+        alive_ = false;
+
+        return Evento::enemyDeath(
+            id_,
+            atacante.id(),
+            posX_,
+            posY_
+        );
+    }
+
     return std::nullopt;
 }

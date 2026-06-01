@@ -21,20 +21,23 @@ void EnemySystem::update(sf::Time dt)
 
     for (Enemigo& enemy : enemies_)
     {
-        Directions direction;
-        int num = rand() % 4;
+        if (enemy.alive())
+        {
+            Directions direction;
+            int num = rand() % 4;
 
-        switch (num){
-            case 0: direction = Directions::DOWN; break;
-            case 1: direction = Directions::UP; break;
-            case 2: direction = Directions::LEFT; break;
-            case 3: direction = Directions::RIGHT; break;
-            default: break;
-        }
+            switch (num){
+                case 0: direction = Directions::DOWN; break;
+                case 1: direction = Directions::UP; break;
+                case 2: direction = Directions::LEFT; break;
+                case 3: direction = Directions::RIGHT; break;
+                default: break;
+            }
 
-        Evento e = enemy.generarEventoMov(direction);
+            Evento e = enemy.generarEventoMov(direction);
 
-        bus_.push(e);
+            bus_.push(e);
+        }  
     }
 }
 

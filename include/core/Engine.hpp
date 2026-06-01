@@ -11,7 +11,9 @@
 #include "core/IEngine.hpp"
 #include "entities/Tablero.hpp"
 #include "entities/Player.hpp"
+#include "entities/Bomba.hpp"
 #include "entities/Enemigo.hpp"
+#include "entities/Explosion.hpp"
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
 #include "systems/EventBus.hpp"
@@ -39,11 +41,15 @@ class Engine : public IEngine
         Tablero tablero_;
         std::vector<Player> jugadores_;
         std::vector<Enemigo> enemigos_;
+        std::vector<Bomba> bombas_;
+        std::vector<Explosion> explosiones_;
+
+        int nextExplosionId_ = 0;
+        int nextBombId_ = 0;
 
         sf::Time roundTimer_;
 
         /*
-        vector<Bomba> listaBombas;
         vector<PowerUp> listaPowerUps;
         */
         pthread_t logicThread_;
@@ -67,10 +73,16 @@ class Engine : public IEngine
         void updateGameState();
 
         void onPlayerMove(Evento& evento);
-        void onEnemyMove(Evento& evento);
-        void onPlayerDeath(Evento& evento);
-        void moveEnemies();
+        //void onPlayerDeath(Evento& evento);
+        void onPlayerPlaceBomb(Evento& evento);
+        void onBombExplode(Evento& evento);
+        void createExplosion(Position pos, int autor);
+        void explodeDirection(Position origen,int creador,int dx,int dy,int radio);
+
         void danioPlayer(int playerId);
+        void onTileDestroyed(Evento& evento);
+        void onEnemyDeath(Evento& evento);
+        void onChainExplosion(Evento& evento);
 
         //void updateBombs(sf::Time dt);
         //void updateExplosions(sf::Time dt);

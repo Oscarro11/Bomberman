@@ -9,8 +9,12 @@ class Enemigo : public Personaje
         int tipo_;
         int alcance_;
 
+        bool alive_;
+
     public:
         Enemigo(int id, int tipo, int alcance, int x, int y);
         Evento generarEventoMov(Directions direction) override;
         std::optional<Evento> recibirDanio(const Personaje& atacante) override;
+
+        inline bool alive() {return alive_;}
 };

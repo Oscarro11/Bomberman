@@ -60,7 +60,7 @@ void GameOverScreen::render(sf::RenderWindow& window,
     drawLine(window, font,
         "               \\o/",                               row++, winnerColor);
     drawLine(window, font,
-        "               /|\\",                               row++, winnerColor);
+        "                | ",                               row++, winnerColor);
     drawLine(window, font,
         "               / \\",                               row++, winnerColor);
     row++;
