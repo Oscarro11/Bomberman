@@ -2,6 +2,7 @@
 #include "rendering/InstructionsScreen.hpp"
 #include "rendering/ScoresScreen.hpp"
 #include "rendering/MultiplayerScreen.hpp"
+#include "rendering/SingleplayerScreen.hpp"
 #include "rendering/GameScreen.hpp"
 
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
@@ -25,7 +26,7 @@ Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
             return new ScoresScreen(scores);
         }
             
-        //if (selectedOption_ == 2) return new InstructionsScreen;     //One player mode
+        if (selectedOption_ == 2) return new SinglePlayerConfigurationScreen;
         if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;    //Multi player mode, just a preview
         if (selectedOption_ == 4) return new ExitScreen;   // quit handled by Vista
     }

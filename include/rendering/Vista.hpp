@@ -21,10 +21,14 @@ class Vista {
 
         void updateSnapshot(RenderSnapshot& snap);
         void transitionToGame();
-
-    private:
+        Difficulty getDifficulty() const;
+        
+        
+        private:
         std::vector<PlayerStats> cachedStats_;
-
+        Difficulty cachedDifficulty_ =
+        Difficulty::Easy;
+        
         sf::RenderWindow& window_;
         sf::Font&         font_;
         Screen*           currentScreen_;   // owns the active screen

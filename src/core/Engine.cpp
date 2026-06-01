@@ -17,6 +17,9 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     pthread_mutex_init(&enemiesMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
 
+    singlePlayer_ =
+    (jugadores.size() == 1);
+
     const auto& playersSpawn = tablero_.getSpawnPlayers();
     
     for (int i=0; i < jugadores.size(); i++)
@@ -296,11 +299,39 @@ void Engine::updateGameState()
 
     for (const Player& p : jugadores_)
     {
-        if (p.vida() > 0) ++alivePlayers;
+        if (p.vida() > 0)
+            ++alivePlayers;
     }
 
-    if (alivePlayers <= 1) gameOver_ = true;
-    if (roundTimer_ <= sf::Time::Zero) gameOver_ = true;
+    if (singlePlayer_)
+    {
+        if (alivePlayers == 0)
+            gameOver_ = true;
+
+        bool enemiesAlive = false;
+
+        for (const Enemigo& e : enemigos_)
+        {
+            if (e.isAlive())
+            {
+                enemiesAlive = true;
+                break;
+            }
+        }
+
+        if (!enemiesAlive)
+        {
+            gameOver_ = true;
+        }
+    }
+    else
+    {
+        if (alivePlayers <= 1)
+            gameOver_ = true;
+    }
+
+    if (roundTimer_ <= sf::Time::Zero)
+        gameOver_ = true;
 }
 
 RenderSnapshot Engine::makeRenderSnapshot()
@@ -531,25 +562,93 @@ void Engine::onEnemyMove(Evento& evento)
     }
 }
 
-void Engine::moveEnemies() {
-    for (int i = 0; i < (int)enemigos_.size(); i++) {
-
+void Engine::moveEnemies()
+{
+    for (int i = 0; i < (int)enemigos_.size(); i++)
+    {
         if (!enemigos_[i].isAlive())
             continue;
 
-        Directions direction;
-        int num = rand() % 4;
+        for (int intento = 0; intento < 4; intento++)
+        {
+            Directions direction;
 
-        switch (num){
-            case 0: direction = Directions::DOWN; break;
-            case 1: direction = Directions::UP; break;
-            case 2: direction = Directions::LEFT; break;
-            case 3: direction = Directions::RIGHT; break;
-            default: break;
+            int num = rand() % 4;
+
+            switch (num)
+            {
+                case 0: direction = Directions::DOWN;  break;
+                case 1: direction = Directions::UP;    break;
+                case 2: direction = Directions::LEFT;  break;
+                case 3: direction = Directions::RIGHT; break;
+            }
+
+            Position pos{
+                enemigos_[i].posX(),
+                enemigos_[i].posY()
+            };
+
+            Position destino = pos;
+
+            switch (direction)
+            {
+                case Directions::UP:    destino.y--; break;
+                case Directions::DOWN:  destino.y++; break;
+                case Directions::LEFT:  destino.x--; break;
+                case Directions::RIGHT: destino.x++; break;
+            }
+
+            // Fuera del mapa
+            if (destino.x < 0 ||
+                destino.y < 0 ||
+                destino.x >= tablero_.getWidth() ||
+                destino.y >= tablero_.getHeight())
+            {
+                continue;
+            }
+
+            const BoardCell cell =
+                tablero_.getCell(destino);
+
+            bool hayJugador = false;
+
+            for (const Occupant& occ : cell.occupants)
+            {
+                if (occ.type == EntityType::Player1 ||
+                    occ.type == EntityType::Player2 ||
+                    occ.type == EntityType::Player3 ||
+                    occ.type == EntityType::Player4)
+                {
+                    hayJugador = true;
+                    break;
+                }
+            }
+
+            // Si hay jugador, dejamos que onEnemyMove()
+            // procese el daño.
+            if (hayJugador)
+            {
+                pushEvento(
+                    enemigos_[i].generarEventoMov(
+                        direction
+                    )
+                );
+
+                break;
+            }
+
+            // Si no hay jugador, usamos la lógica normal
+            if (tablero_.isWalkable(destino))
+            {
+                pushEvento(
+                    enemigos_[i].generarEventoMov(
+                        direction
+                    )
+                );
+
+                break;
+            }
         }
-
-        // Enemy generates its own event
-        pushEvento(enemigos_[i].generarEventoMov(direction));
     }
 }
 

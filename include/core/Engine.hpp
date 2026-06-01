@@ -37,9 +37,10 @@ class Engine : public IEngine
 
         sf::Time roundTimer_;
         bool gameOver_;
+        bool singlePlayer_;
 
         sf::Time enemyMoveTimer_ = sf::Time::Zero;
-        static constexpr float ENEMY_MOVE_INTERVAL = 2.4f;   // seconds between moves
+        static constexpr float ENEMY_MOVE_INTERVAL = 1.f;   // seconds between moves
 
         /*
         */
