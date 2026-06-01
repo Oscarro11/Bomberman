@@ -22,3 +22,10 @@ enum class EntityType{
     PowerUpItem,
     None
 };
+
+enum class Difficulty
+{
+    Easy,
+    Medium,
+    Hard
+};

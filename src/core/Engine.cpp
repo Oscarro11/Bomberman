@@ -15,6 +15,8 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_mutex_init(&enemiesMutex_, NULL);
 
+    singlePlayer_ = (jugadores.size() == 1);
+
     const auto& playersSpawn = tablero_.getSpawnPlayers();
     
     for (int i=0; i < jugadores.size(); i++)
@@ -209,7 +211,8 @@ void Engine::updateGameState()
 
     for (const Player& p : jugadores_)
     {
-        if (p.vida() > 0) ++alivePlayers;
+        if (p.vida() > 0)
+            ++alivePlayers;
     }
 
     bool noEnemies = true;
@@ -221,8 +224,15 @@ void Engine::updateGameState()
         } 
     }
 
+    if (singlePlayer_)
+    {
+        if (alivePlayers == 0) state_ = MatchState::WaitingForGameOverConfirmation;
+    }
+    else
+    {
+        if (alivePlayers <= 1) state_ = MatchState::WaitingForGameOverConfirmation;
+    }
     if (noEnemies) state_ = MatchState::WaitingForGameOverConfirmation;
-    if (alivePlayers <= 1) state_ = MatchState::WaitingForGameOverConfirmation;
     if (roundTimer_ <= sf::Time::Zero) state_ = MatchState::WaitingForGameOverConfirmation;
 }
 

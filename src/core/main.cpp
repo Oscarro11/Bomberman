@@ -28,9 +28,31 @@ int main() {
 
     // Hand off to game loop
     if (vista.shouldStartGame()) {
-        std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
-        Engine engine("mapa2.txt", playerInfo);
-        //Engine engine("mapa_test_enemigos.txt", playerInfo);
+       std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
+
+        Difficulty difficulty = vista.getDifficulty();
+
+        std::string mapa = "mapa2.txt";
+
+        if (playerInfo.size() == 1)
+        {
+            switch (difficulty)
+            {
+                case Difficulty::Easy:
+                    mapa = "mapa_sp_uno.txt";
+                    break;
+
+                case Difficulty::Medium:
+                    mapa = "mapa_sp_dos.txt";
+                    break;
+
+                case Difficulty::Hard:
+                    mapa = "mapa_sp_tres.txt";
+                    break;
+            }
+        }
+        
+        Engine engine(mapa, playerInfo);
         engine.start();
 
         InputHandler inputHandler(&engine);

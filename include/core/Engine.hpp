@@ -47,6 +47,7 @@ class Engine : public IEngine
         std::vector<Bomba> bombas_;
         std::vector<Explosion> explosiones_;
         std::vector<PowerUp> powerUps_;
+        std::vector<PowerUp> powerUps_;
 
         int nextExplosionId_ = 0;
         int nextBombId_ = 0;

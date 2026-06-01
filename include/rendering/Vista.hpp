@@ -21,11 +21,15 @@ class Vista {
 
         void updateSnapshot(RenderSnapshot& snap);
         void transitionToGame();
-        void transitionToGameOver(std::string winnerName, int winnerId);
+        Difficulty getDifficulty() const;
+        
+                void transitionToGameOver(std::string winnerName, int winnerId);
 
-    private:
+        private:
         std::vector<PlayerStats> cachedStats_;
-
+        Difficulty cachedDifficulty_ =
+        Difficulty::Easy;
+        
         sf::RenderWindow& window_;
         sf::Font&         font_;
         Screen*           currentScreen_;   // owns the active screen

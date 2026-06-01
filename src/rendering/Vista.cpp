@@ -1,6 +1,7 @@
 #include "rendering/Vista.hpp"
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/MultiplayerScreen.hpp"
+#include "rendering/SingleplayerScreen.hpp"
 #include "rendering/GameScreen.hpp"
 #include "rendering/MultiplayerGameOverScreen.hpp"
 #include "utils/ScreenUtils.hpp"
@@ -41,14 +42,34 @@ void Vista::handleEvent(const sf::Event& event)
         return;
     }
 
-    // Start game transition
+    // Start game transition to Multiplayer
     if (dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) &&
         dynamic_cast<StartScreen*>(next))
     {
         auto* mpScreen = dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_);
+        cachedStats_.clear();
         for (const PlayerConfig* config : mpScreen->getPlayerConfigs()) {
             cachedStats_.push_back(PlayerStats{config -> stats.nombre, config -> stats.maxBombas, config -> stats.rangoExplosion, config -> stats.velocidad});
         }
+
+        startGame_ = true;
+        return;
+    }
+    // Start game transition to Singleplayer
+    if (dynamic_cast<SinglePlayerConfigurationScreen*>(currentScreen_) &&
+        dynamic_cast<StartScreen*>(next))
+    {
+        auto* spScreen =
+            dynamic_cast<SinglePlayerConfigurationScreen*>(currentScreen_);
+
+        cachedDifficulty_ =
+            spScreen->getDifficulty();
+
+        cachedStats_.clear();
+
+        cachedStats_.push_back(
+            PlayerStats{1,1,1}
+        );
 
         startGame_ = true;
         return;
@@ -87,4 +108,9 @@ void Vista::render() {
 std::vector<PlayerStats> Vista::getPlayerStats() const
 {
     return cachedStats_;
+}
+
+Difficulty Vista::getDifficulty() const
+{
+    return cachedDifficulty_;
 }
