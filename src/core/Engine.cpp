@@ -54,9 +54,12 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
 
 Engine::~Engine()
 {
+    bool started = (state_ != MatchState::Preparing);
+
+    state_ = MatchState::Finished;
     eventBus_.stop();
 
-    if (state_ != MatchState::Preparing){
+    if (started){
         for (const pthread_t& thread : threads)
         {
             pthread_join(thread, NULL);
@@ -64,8 +67,7 @@ Engine::~Engine()
 
         pthread_join(logicThread_, NULL);
     }
-
-    state_ = MatchState::Finished;
+    
     pthread_mutex_destroy(&inputMutex_);
     pthread_mutex_destroy(&enemiesMutex_);
 }
