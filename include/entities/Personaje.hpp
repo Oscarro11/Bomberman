@@ -17,5 +17,7 @@ public:
     virtual Evento generarEventoMov(Directions direction) = 0;
     virtual std::optional<Evento> recibirDanio(const Personaje& atacante) = 0;
 
-    int id() const {return id_;};
+    int          id()   const { return id_; }
+    unsigned int posX() const { return posX_; }
+    unsigned int posY() const { return posY_; }
 };

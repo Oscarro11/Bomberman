@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <atomic>
+#include <unordered_map>
 #include <pthread.h>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
@@ -12,6 +13,7 @@
 #include "entities/Player.hpp"
 #include "entities/Bomba.hpp"
 #include "core/IEngine.hpp"
+#include "core/Tablero.hpp"
 #include "input/InputHandler.hpp"
 
 //Estructura de datos usada en Vista, para trasladar la info del menu principal
@@ -28,10 +30,11 @@ class Engine : public IEngine
 {
     private:
         std::atomic<bool> running_;
-        //Tablero tablero;
+        Tablero tablero_;
         static std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
         std::vector<std::unique_ptr<Bomba>> bombas_;
+        std::unordered_map<int,int> bombToPlayer_;
 
         pthread_t logicThread_;
 
@@ -57,6 +60,7 @@ class Engine : public IEngine
         void procesarEvento(Evento& evento);
         void onPlayerMove(Evento& evento);
         void onPlayerPlaceBomb(Evento& evento);
+        void onBombExplode(Evento& evento);
 
     public:
         Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores);

@@ -5,6 +5,8 @@ std::vector<Player> Engine::jugadores_;
 Engine::Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores)
     : running_(true), inputHandler_(this)
 {
+    tablero_.cargar(tableroSource);
+
     pthread_mutex_init(&eventMutex_, NULL);
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_cond_init(&eventReady_, NULL);
@@ -139,6 +141,10 @@ void Engine::procesarEvento(Evento& evento){
             onPlayerPlaceBomb(evento);
             break;
 
+        case EventType::BombExplode:
+            onBombExplode(evento);
+            break;
+
         /*
 
         case EventType::PlayerDeath:
@@ -180,6 +186,55 @@ void Engine::procesarEvento(Evento& evento){
     }
 }
 
+void Engine::onBombExplode(Evento& evento)
+{
+    int cx = evento.posicionX();
+    int cy = evento.posicionY();
+    unsigned int radio = evento.data().explosion.radio;
+
+    auto it = bombToPlayer_.find(evento.autor());
+    Player* atacante = (it != bombToPlayer_.end()) ? &jugadores_[it->second] : nullptr;
+
+    // Las 4 direcciones: derecha, izquierda, abajo, arriba
+    const int dirs[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+
+    // Celda central también recibe explosión
+    for (auto& jugador : jugadores_) {
+        if ((int)jugador.posX() == cx && (int)jugador.posY() == cy && atacante) {
+            auto muerte = jugador.recibirDanio(*atacante);
+            if (muerte.has_value()) pushEvento(muerte.value());
+        }
+    }
+
+    for (auto& dir : dirs) {
+        for (unsigned int paso = 1; paso <= radio; paso++) {
+            int nx = cx + dir[0] * (int)paso;
+            int ny = cy + dir[1] * (int)paso;
+
+            char tile = tablero_.getTile(nx, ny);
+
+            if (tile == '#') break;
+
+            for (auto& jugador : jugadores_) {
+                if ((int)jugador.posX() == nx && (int)jugador.posY() == ny && atacante) {
+                    auto muerte = jugador.recibirDanio(*atacante);
+                    if (muerte.has_value()) pushEvento(muerte.value());
+                }
+            }
+
+            if (tile == '+') {
+                tablero_.setTile(nx, ny, '.');
+                pushEvento(Evento::tileDestroyed(nx, ny));
+                break;
+            }
+        }
+    }
+
+    bombToPlayer_.erase(evento.autor());
+    printf("Bomba %i exploto en (%i,%i) con radio %u\n",
+        evento.autor(), cx, cy, radio);
+}
+
 void Engine::onPlayerPlaceBomb(Evento& evento)
 {
     Player& player = jugadores_[evento.autor()];
@@ -190,6 +245,7 @@ void Engine::onPlayerPlaceBomb(Evento& evento)
 
     static int bombIdCounter = 0;
     int bombId = bombIdCounter++;
+    bombToPlayer_[bombId] = evento.autor();
 
     auto bomba = std::make_unique<Bomba>(
         bombId,

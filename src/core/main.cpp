@@ -30,7 +30,7 @@ int main() {
             playerInfo.push_back(PlayerInfo{config.vida, config.maxBombas, config.rangoExplosion, config.velocidad});
         }
 
-        Engine engine("map.txt", playerInfo);
+        Engine engine("assets/mapas/mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
         vista.clear();
 
