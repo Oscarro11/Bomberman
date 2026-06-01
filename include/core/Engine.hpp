@@ -19,22 +19,28 @@
 
 struct PlayerStats;
 
+enum class MatchState
+{
+    Preparing,
+    Playing,
+    Paused,
+    WaitingForGameOverConfirmation,
+    Finished
+};
+
 class Engine : public IEngine
 {
     private:
+        MatchState state_;
+
         EventBus eventBus_;
         EnemySystem enemiesSystem_;
 
-        std::atomic<bool> running_;
         Tablero tablero_;
         std::vector<Player> jugadores_;
         std::vector<Enemigo> enemigos_;
 
         sf::Time roundTimer_;
-        bool gameOver_;
-
-        sf::Time enemyMoveTimer_ = sf::Time::Zero;
-        static constexpr float ENEMY_MOVE_INTERVAL = 0.8f;   // seconds between moves
 
         /*
         vector<Bomba> listaBombas;
@@ -87,10 +93,17 @@ class Engine : public IEngine
         //Deberia cambiarse, o revisar de hacer una interfaz para que solo inputHandler y Engine puedan acceder
         Player& getPlayer(int id) {return jugadores_.at(id);}
 
-        bool running() const override;
+        std::string getWinnerName() const;
+        int         getWinnerId()   const;
 
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         RenderSnapshot makeRenderSnapshot();
+
+        inline MatchState state() const {return state_;};
+        inline bool isPlaying() const {return state_ == MatchState::Playing;};
+        inline bool isFinished() const {return state_ == MatchState::Finished;};
+
+        void confirmGameOver();
 };
 
 struct EnemyThreadArg{

@@ -2,6 +2,7 @@
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/MultiplayerScreen.hpp"
 #include "rendering/GameScreen.hpp"
+#include "rendering/MultiplayerGameOverScreen.hpp"
 #include "utils/ScreenUtils.hpp"
 #include <sstream>
 
@@ -60,6 +61,12 @@ void Vista::handleEvent(const sf::Event& event)
 void Vista::transitionToGame() {
     delete currentScreen_;
     currentScreen_ = new GameScreen();
+}
+
+void Vista::transitionToGameOver(std::string winnerName, int winnerId)
+{
+    delete currentScreen_;
+    currentScreen_ = new GameOverScreen(winnerName, winnerId);
 }
 
 void Vista::updateSnapshot(RenderSnapshot& snap){

@@ -37,7 +37,7 @@ int main() {
 
         vista.transitionToGame();
 
-        while (window.isOpen() && engine.running())
+        while (window.isOpen() && !engine.isFinished())
         {
             sf::Event event;
             std::vector<sf::Keyboard::Key> pressedKeys;
@@ -79,6 +79,20 @@ int main() {
             sf::sleep(sf::milliseconds(16));
         }
 
+        while (window.isOpen()) {
+            vista.transitionToGameOver(engine.getWinnerName(), engine.getWinnerId());
+
+            while (window.isOpen()) {
+                sf::Event event;
+                while (window.pollEvent(event)) {
+                    if (event.type == sf::Event::Closed)
+                        window.close();
+                    vista.handleEvent(event);
+                }
+                vista.render();
+                sf::sleep(sf::milliseconds(16));
+            }
+        }
     }
     return 0;
 }

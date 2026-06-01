@@ -24,7 +24,7 @@ void InputHandler::update(std::vector<sf::Keyboard::Key> pressedKeys){
         for (int id = 0; id < MAX_PLAYERS; ++id) {
             const KeyMap& km = KEYMAPS[id];
 
-            if (key == km.up || key == km.down || key == km.left || key == km.right || key == km.bomb){
+            if (key == km.up || key == km.down || key == km.left || key == km.right || key == km.bomb || key == sf::Keyboard::Key::Enter){
                     engine_ -> handleInput(key, id);
                 }
         }

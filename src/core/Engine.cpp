@@ -4,12 +4,11 @@
 #include "utils/AssetsUtils.hpp"
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
-    : running_(false)
+    : state_(MatchState::Preparing)
     , inputHandler_(this)
     , tablero_(tableroSource)
-    , roundTimer_(sf::seconds(180.f))
+    , roundTimer_(sf::seconds(15.f))
     , enemiesSystem_(enemigos_, eventBus_, tablero_)
-    , gameOver_(false)
 {
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_mutex_init(&enemiesMutex_, NULL);
@@ -53,11 +52,9 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
 
 Engine::~Engine()
 {
-    if (running_.load())
-    {
-        running_.store(false);
-        eventBus_.stop();
+    eventBus_.stop();
 
+    if (state_ != MatchState::Preparing){
         for (const pthread_t& thread : threads)
         {
             pthread_join(thread, NULL);
@@ -66,16 +63,16 @@ Engine::~Engine()
         pthread_join(logicThread_, NULL);
     }
 
+    state_ = MatchState::Finished;
     pthread_mutex_destroy(&inputMutex_);
     pthread_mutex_destroy(&enemiesMutex_);
 }
 
 void Engine::start()
 {
-    if (running_.load()) return;
+    if (state_ != MatchState::Preparing) return;
 
-    running_.store(true);
-
+    state_ = MatchState::Playing;
     // Player threads
     for (int i = 0; i < jugadores_.size(); ++i)
     {
@@ -94,18 +91,13 @@ void Engine::start()
 
 void Engine::update(sf::Time dt)
 {
-    if (gameOver_) return;
+    if (state_ != MatchState::Playing) return;
 
     roundTimer_ -= dt;
 
     enemiesSystem_.update(dt);
     updatePlayersState();
     updateGameState();
-}
-
-bool Engine::running() const
-{
-    return running_.load();
 }
 
 void* Engine::player_thread_process(void* arg)
@@ -115,7 +107,7 @@ void* Engine::player_thread_process(void* arg)
     int playerId = data -> playerId;
     delete data;
 
-    while (engine -> running()) {
+    while (!engine -> isFinished()) {
         //Pendiente
         sf::sleep(sf::milliseconds(16));
     }
@@ -128,7 +120,7 @@ void* Engine::logic_thread(void* arg)
 {
     Engine* engine = static_cast<Engine*>(arg);
 
-    while (engine->running())
+    while (!engine -> isFinished())
     {
         auto evento = engine -> popEvento();
 
@@ -166,6 +158,7 @@ void Engine::procesarEvento(Evento& evento){
             case EventType::PlayerDeath:
                 onPlayerDeath(evento);
                 break;
+
         case EventType::PlayerPlaceBomb:
             onPlayerPlaceBomb(evento);
             break;
@@ -220,8 +213,8 @@ void Engine::updateGameState()
         if (p.vida() > 0) ++alivePlayers;
     }
 
-    if (alivePlayers <= 1) gameOver_ = true;
-    if (roundTimer_ <= sf::Time::Zero) gameOver_ = true;
+    if (alivePlayers <= 1) state_ = MatchState::WaitingForGameOverConfirmation;
+    if (roundTimer_ <= sf::Time::Zero) state_ = MatchState::WaitingForGameOverConfirmation;
 }
 
 RenderSnapshot Engine::makeRenderSnapshot()
@@ -270,10 +263,30 @@ RenderSnapshot Engine::makeRenderSnapshot()
 
     // HUD data
     snapshot.hud.roundTime = roundTimer_.asSeconds();
-    snapshot.hud.gameOver  = gameOver_;
+    snapshot.hud.gameOver  = (state_ == MatchState::WaitingForGameOverConfirmation);
     snapshot.hud.numPlayers = jugadores_.size();
 
     return snapshot;
+}
+
+void Engine::confirmGameOver() {
+    if (state_ ==
+        MatchState::WaitingForGameOverConfirmation)
+    {
+        state_ = MatchState::Finished;
+    }
+}
+
+std::string Engine::getWinnerName() const {
+    for (const Player& p : jugadores_)
+        if (p.vida() > 0) return p.nombre();
+    return "Nadie";   // round timer ran out
+}
+
+int Engine::getWinnerId() const {
+    for (const Player& p : jugadores_)
+        if (p.vida() > 0) return p.id();
+    return -1;
 }
 
 void Engine::onPlayerMove(Evento &evento)
@@ -380,20 +393,30 @@ void Engine::danioPlayer(int playerId)
 }
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
 {
-    pthread_mutex_lock(&inputMutex_);
-    Player& p = jugadores_[playerId];
-    pthread_mutex_unlock(&inputMutex_);
-
-
-    const KeyMap& km = InputHandler::KEYMAPS[playerId];
-    if      (key == km.up)    pushEvento(p.generarEventoMov(Directions::UP));
-    else if (key == km.down)  pushEvento(p.generarEventoMov(Directions::DOWN));
-    else if (key == km.left)  pushEvento(p.generarEventoMov(Directions::LEFT));
-    else if (key == km.right) pushEvento(p.generarEventoMov(Directions::RIGHT));
-    else if (key == km.bomb){
-        std::optional<Evento> evento = p.colocarBomba();
+    if (state_ == MatchState::WaitingForGameOverConfirmation){
+        if (key == sf::Keyboard::Enter)
+        {
+            confirmGameOver();
+        }
         
-        if (evento.has_value())
-            pushEvento(evento.value());
+        return;
+    }
+    else if (state_ == MatchState::Playing)
+    {
+        pthread_mutex_lock(&inputMutex_);
+        Player& p = jugadores_[playerId];
+        pthread_mutex_unlock(&inputMutex_);
+
+        const KeyMap& km = InputHandler::KEYMAPS[playerId];
+        if      (key == km.up)    pushEvento(p.generarEventoMov(Directions::UP));
+        else if (key == km.down)  pushEvento(p.generarEventoMov(Directions::DOWN));
+        else if (key == km.left)  pushEvento(p.generarEventoMov(Directions::LEFT));
+        else if (key == km.right) pushEvento(p.generarEventoMov(Directions::RIGHT));
+        else if (key == km.bomb){
+            std::optional<Evento> evento = p.colocarBomba();
+            
+            if (evento.has_value())
+                pushEvento(evento.value());
+        }
     }
 }

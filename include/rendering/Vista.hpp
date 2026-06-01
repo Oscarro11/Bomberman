@@ -21,6 +21,7 @@ class Vista {
 
         void updateSnapshot(RenderSnapshot& snap);
         void transitionToGame();
+        void transitionToGameOver(std::string winnerName, int winnerId);
 
     private:
         std::vector<PlayerStats> cachedStats_;
