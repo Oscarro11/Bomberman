@@ -1,8 +1,7 @@
 #include "core/Engine.hpp"
 #include "ecs/PlayerStats.hpp"
 #include "entities/Enemigo.hpp"
-#include "entities/Bomba.hpp"
-#include "entities/Explosion.hpp"
+#include "entities/PowerUp.hpp"
 #include "utils/AssetsUtils.hpp"
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
@@ -226,17 +225,14 @@ void Engine::procesarEvento(Evento& evento){
             onChainExplosion(evento);
             break;
 
+        case EventType::PlayerPickPowerUp:
+            onPlayerPickPowerUp(evento);
+            break;
 
         /*
         case EventType::PlayerDeath:
             onPlayerDeath(evento);
             break;
-
-
-        case EventType::PlayerPickPowerUp:
-            onPlayerPickPowerUp(evento);
-            break;
-        
 
         case EventType::GameOver:
             onGameOver(evento);
@@ -380,15 +376,7 @@ void Engine::onPlayerMove(Evento &evento)
             danioPlayer(player.id());
             return;
         }
-    }
 
-    // Limites del tablero
-    if (newPos.x < 0 ||
-        newPos.y < 0 ||
-        newPos.y >= tablero_.matrix().size() ||
-        newPos.x >= tablero_.matrix()[0].size())
-    {
-        return;
     }
 
     // Verificar si se puede caminar
@@ -411,7 +399,6 @@ void Engine::onPlayerMove(Evento &evento)
 
     // Actualizar posicion interna del jugador
     player.setPosition(newPos.x, newPos.y);
-    
 
     for (const Occupant& occ : cell.occupants)
     {
@@ -422,6 +409,11 @@ void Engine::onPlayerMove(Evento &evento)
             );
 
             break;
+        }
+
+        if (occ.type == EntityType::PowerUpItem)
+        {
+            pushEvento(Evento::playerPickPowerUp(player.id(), occ.entityId, newPos.x, newPos.y, powerUps_[occ.entityId].tipo()));
         }
     }
 }
@@ -657,6 +649,30 @@ void Engine::onTileDestroyed(Evento& evento)
         pos,
         TileType::Floor
     );
+
+    if (rand() % 100 < 100)
+    {
+        PowerUpType tipo =
+            static_cast<PowerUpType>(
+                rand() % 3
+            );
+        
+        powerUps_.push_back(
+            PowerUp(
+                tipo,
+                pos.x,
+                pos.y
+            )
+        );
+
+        tablero_.addOccupant(
+            pos,
+            Occupant{
+                EntityType::PowerUpItem,
+                static_cast<int>(powerUps_.size() - 1)
+            }
+        );
+    }
 }
 
 void Engine::onEnemyDeath(Evento& evento)
@@ -702,6 +718,34 @@ void Engine::onChainExplosion(Evento& evento)
             break;
         }
     }
+}
+
+void Engine::onPlayerPickPowerUp(
+    Evento& evento
+)
+{
+    int playerId = evento.autor();
+    int powerUpId = evento.objetivo();
+
+    PowerUpType tipo =
+        static_cast<PowerUpType>(
+            evento.data().powerUp.tipo
+        );
+
+    jugadores_[playerId]
+        .actualizarStat(
+            tipo,
+            1
+        );
+
+    tablero_.removeOccupant(
+        Position{
+            evento.posicionX(),
+            evento.posicionY()
+        },
+        EntityType::PowerUpItem,
+        powerUpId
+    );
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
