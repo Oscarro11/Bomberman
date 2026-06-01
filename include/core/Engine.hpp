@@ -14,6 +14,7 @@
 #include "entities/Bomba.hpp"
 #include "core/IEngine.hpp"
 #include "core/Tablero.hpp"
+#include "core/RenderSnapshot.hpp"
 #include "input/InputHandler.hpp"
 
 //Estructura de datos usada en Vista, para trasladar la info del menu principal
@@ -74,7 +75,7 @@ class Engine : public IEngine
         bool running() const override;
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         void pushEvento(const Evento& evento) override;
-        //RenderSnapshot makeRenderSnapshot();
+        RenderSnapshot makeRenderSnapshot();
 };
 
 //Estructura para crear el hilo de cada jugador

@@ -17,4 +17,5 @@ public:
 
     unsigned int ancho() const { return ancho_; }
     unsigned int alto()  const { return alto_; }
+    const std::vector<std::string>& getGrid() const { return grid_; }
 };

@@ -1,6 +1,7 @@
 #include "systems/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
+#include "rendering/GameRenderer.hpp"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Bomberman");
@@ -32,30 +33,26 @@ int main() {
 
         Engine engine("assets/mapas/mapa.txt", playerInfo);
         InputHandler inputHandler(&engine);
+        GameRenderer renderer(font);
         vista.clear();
 
         while (window.isOpen() && engine.running())
         {
             sf::Event event;
             std::vector<sf::Keyboard::Key> pressedKeys;
-            sf::Time dt = clock.restart();
 
             while (window.pollEvent(event))
             {
                 if (event.type == sf::Event::Closed)
-                {
                     window.close();
-                }
-                else if (event.type == sf::Event::KeyPressed){
+                else if (event.type == sf::Event::KeyPressed)
                     pressedKeys.push_back(event.key.code);
-                }
             }
-            
-            if (pressedKeys.size() > 0)
-            {
+
+            if (!pressedKeys.empty())
                 inputHandler.update(pressedKeys);
-            }
-            
+
+            renderer.draw(window, engine.makeRenderSnapshot());
         }
     }
 

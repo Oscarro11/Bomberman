@@ -20,4 +20,7 @@ public:
     int          id()   const { return id_; }
     unsigned int posX() const { return posX_; }
     unsigned int posY() const { return posY_; }
+    unsigned int vida() const { return vida_; }
+    void setPosX(unsigned int x) { posX_ = x; }
+    void setPosY(unsigned int y) { posY_ = y; }
 };

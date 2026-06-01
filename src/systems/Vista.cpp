@@ -25,6 +25,10 @@ void Vista::handleEvent(const sf::Event& event) {
             break;
 
         case MenuScreen::SinglePlayer:
+            if (event.key.code == sf::Keyboard::Return) {
+                players_ = std::vector<PlayerConfig>(1);
+                startGame_ = true;
+            }
             if (event.key.code == sf::Keyboard::Escape)
                 currentScreen_ = MenuScreen::Main;
             break;
@@ -180,7 +184,17 @@ std::vector<std::string> Vista::buildPlayerCard(
 
 std::vector<std::string> Vista::buildSinglePlayerScreen() const {
     return {
-        "Single Player Screen :D"
+        "",
+        "  +------------------------------------------+",
+        "  |           SINGLE PLAYER                  |",
+        "  +------------------------------------------+",
+        "",
+        "   Vida:    3",
+        "   Bombas:  3",
+        "   Rango:   3",
+        "",
+        "   [ENTER] para iniciar",
+        "   [ESC]   para volver",
     };
 }
 

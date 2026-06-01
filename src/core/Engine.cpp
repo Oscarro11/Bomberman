@@ -15,8 +15,13 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores)
     {
         PlayerInfo info = jugadores.at(i);
 
-        //Se crea un hilo por cada jugador
-        Player player = Player(i, info.vida, info.maxBombas, info.velocidad, 0, 0);
+        // Puntos de spawn en las 4 esquinas libres del mapa
+        static const int spawnX[4] = {1, 9, 1, 9};
+        static const int spawnY[4] = {1, 1, 9, 9};
+        int sx = (i < 4) ? spawnX[i] : 1;
+        int sy = (i < 4) ? spawnY[i] : 1;
+
+        Player player = Player(i, info.vida, info.maxBombas, info.velocidad, sx, sy);
         this -> jugadores_.push_back(player);
 
         pthread_t thread;
@@ -263,12 +268,35 @@ void Engine::onPlayerPlaceBomb(Evento& evento)
         evento.autor(), bombId, evento.posicionX(), evento.posicionY());
 }
 
-void Engine::onPlayerMove(Evento &evento)
+void Engine::onPlayerMove(Evento& evento)
 {
     Player& player = jugadores_[evento.autor()];
+    int nx = (int)player.posX() + evento.data().mover.dx;
+    int ny = (int)player.posY() + evento.data().mover.dy;
 
-    //Pendiente de implementarse
-    printf("El jugador con id %i se movera segun los siguientes cambios: %i, %i\n", player.id(), evento.data().mover.dx, evento.data().mover.dy);
+    if (tablero_.getTile(nx, ny) == '.')
+    {
+        player.setPosX(nx);
+        player.setPosY(ny);
+    }
+}
+
+RenderSnapshot Engine::makeRenderSnapshot()
+{
+    RenderSnapshot snap;
+
+    pthread_mutex_lock(&inputMutex_);
+
+    snap.grid      = tablero_.getGrid();
+    snap.gridAncho = tablero_.ancho();
+    snap.gridAlto  = tablero_.alto();
+
+    for (const auto& p : jugadores_)
+        snap.jugadores.push_back({p.id(), p.posX(), p.posY(), p.vida()});
+
+    pthread_mutex_unlock(&inputMutex_);
+
+    return snap;
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)
