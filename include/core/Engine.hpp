@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 #include <atomic>
+#include <chrono>
+#include <algorithm>
 #include <unordered_map>
 #include <pthread.h>
 #include <SFML/System.hpp>
@@ -31,11 +33,15 @@ class Engine : public IEngine
 {
     private:
         std::atomic<bool> running_;
+        std::atomic<int>  winner_;
         Tablero tablero_;
         static std::vector<Player> jugadores_;
         std::queue<Evento> listaEventos_;
         std::vector<std::unique_ptr<Bomba>> bombas_;
         std::unordered_map<int,int> bombToPlayer_;
+
+        struct ExplosionEntry { int x, y; std::chrono::steady_clock::time_point time; };
+        std::vector<ExplosionEntry> explosionTiles_;
 
         pthread_t logicThread_;
 
@@ -62,6 +68,7 @@ class Engine : public IEngine
         void onPlayerMove(Evento& evento);
         void onPlayerPlaceBomb(Evento& evento);
         void onBombExplode(Evento& evento);
+        void onPlayerDeath(Evento& evento);
 
     public:
         Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores);
@@ -73,6 +80,7 @@ class Engine : public IEngine
         Player& getPlayer(int id) {return jugadores_.at(id);}
 
         bool running() const override;
+        int  winner()  const { return winner_; }
         void handleInput(sf::Keyboard::Key key, int playerId) override;
         void pushEvento(const Evento& evento) override;
         RenderSnapshot makeRenderSnapshot();

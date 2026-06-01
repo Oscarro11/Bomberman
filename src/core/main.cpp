@@ -45,11 +45,15 @@ int main() {
             {
                 if (event.type == sf::Event::Closed)
                     window.close();
-                else if (event.type == sf::Event::KeyPressed)
-                    pressedKeys.push_back(event.key.code);
+                else if (event.type == sf::Event::KeyPressed) {
+                    if (event.key.code == sf::Keyboard::Escape)
+                        window.close();
+                    else
+                        pressedKeys.push_back(event.key.code);
+                }
             }
 
-            if (!pressedKeys.empty())
+            if (!pressedKeys.empty() && engine.winner() == -1)
                 inputHandler.update(pressedKeys);
 
             renderer.draw(window, engine.makeRenderSnapshot());

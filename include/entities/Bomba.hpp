@@ -21,7 +21,11 @@ class Bomba {
 public:
     Bomba(int id, unsigned int posX, unsigned int posY, unsigned int radio,
         unsigned int timerMs, Engine* engine, sem_t* semBombas);
-        void iniciar(); //inicia el hilo de la bomba
+    void iniciar();
+
+    int          id()   const { return id_; }
+    unsigned int posX() const { return posX_; }
+    unsigned int posY() const { return posY_; }
 };
 
 

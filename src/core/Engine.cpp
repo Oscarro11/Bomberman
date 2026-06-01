@@ -3,7 +3,7 @@
 std::vector<Player> Engine::jugadores_;
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerInfo> jugadores)
-    : running_(true), inputHandler_(this)
+    : running_(true), winner_(-1), inputHandler_(this)
 {
     tablero_.cargar(tableroSource);
 
@@ -150,6 +150,10 @@ void Engine::procesarEvento(Evento& evento){
             onBombExplode(evento);
             break;
 
+        case EventType::PlayerDeath:
+            onPlayerDeath(evento);
+            break;
+
         /*
 
         case EventType::PlayerDeath:
@@ -235,9 +239,39 @@ void Engine::onBombExplode(Evento& evento)
         }
     }
 
+    // Registrar celdas de explosion para renderizado breve
+    auto now = std::chrono::steady_clock::now();
+    explosionTiles_.push_back({cx, cy, now});
+    for (auto& dir : dirs) {
+        for (unsigned int paso = 1; paso <= radio; paso++) {
+            int nx2 = cx + dir[0] * (int)paso;
+            int ny2 = cy + dir[1] * (int)paso;
+            if (!tablero_.dentroDelMapa(nx2, ny2)) break;
+            explosionTiles_.push_back({nx2, ny2, now});
+            if (tablero_.getTile(nx2, ny2) == '#') break;
+        }
+    }
+
     bombToPlayer_.erase(evento.autor());
     printf("Bomba %i exploto en (%i,%i) con radio %u\n",
         evento.autor(), cx, cy, radio);
+}
+
+void Engine::onPlayerDeath(Evento& evento)
+{
+    int aliveCount = 0;
+    int lastAliveId = -1;
+    for (auto& p : jugadores_) {
+        if (p.vida() > 0) {
+            aliveCount++;
+            lastAliveId = p.id();
+        }
+    }
+
+    if (aliveCount <= 1)
+        winner_ = lastAliveId; // -1 si todos murieron, id del ganador si queda uno
+
+    printf("Jugador %i murio. Vivos restantes: %i\n", evento.objetivo(), aliveCount);
 }
 
 void Engine::onPlayerPlaceBomb(Evento& evento)
@@ -290,9 +324,26 @@ RenderSnapshot Engine::makeRenderSnapshot()
     snap.grid      = tablero_.getGrid();
     snap.gridAncho = tablero_.ancho();
     snap.gridAlto  = tablero_.alto();
+    snap.winner    = winner_;
 
     for (const auto& p : jugadores_)
         snap.jugadores.push_back({p.id(), p.posX(), p.posY(), p.vida()});
+
+    for (const auto& b : bombas_)
+        snap.bombas.push_back({b->posX(), b->posY()});
+
+    auto now = std::chrono::steady_clock::now();
+    for (auto& e : explosionTiles_) {
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - e.time).count();
+        if (ms < 500)
+            snap.explosiones.push_back({(unsigned int)e.x, (unsigned int)e.y});
+    }
+    explosionTiles_.erase(
+        std::remove_if(explosionTiles_.begin(), explosionTiles_.end(), [&](const ExplosionEntry& e){
+            return std::chrono::duration_cast<std::chrono::milliseconds>(now - e.time).count() > 1000;
+        }),
+        explosionTiles_.end()
+    );
 
     pthread_mutex_unlock(&inputMutex_);
 

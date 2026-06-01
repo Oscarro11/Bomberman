@@ -12,6 +12,9 @@ public:
 
 private:
     void drawBoard(sf::RenderWindow& window, const RenderSnapshot& snapshot);
+    void drawExplosions(sf::RenderWindow& window, const RenderSnapshot& snapshot);
+    void drawBombs(sf::RenderWindow& window, const RenderSnapshot& snapshot);
     void drawPlayers(sf::RenderWindow& window, const RenderSnapshot& snapshot);
     void drawHUD(sf::RenderWindow& window, const RenderSnapshot& snapshot);
+    void drawGameOver(sf::RenderWindow& window, const RenderSnapshot& snapshot);
 };
