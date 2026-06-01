@@ -83,8 +83,19 @@ Evento Evento::enemyDeath(int enemyId,int killerId,int posX,int posY)
     return Evento(EventType::EnemyDeath,killerId,enemyId,posX,posY,{});
 }
 
+Evento Evento::chainExplosion(int bombId)
+{
+    return Evento(
+        EventType::ChainExplosion,
+        bombId,
+        -1,
+        0,
+        0,
+        {}
+    );
+}
+
 /*
- Evento Evento::chainExplosion(int bombId){}
  Evento Evento::gameOver(){}
  Evento Evento::roundStart(){}
  */

@@ -128,17 +128,21 @@ void Tablero::addOccupant(Position p, const Occupant &occ)
     pthread_mutex_unlock(&board_mutex_);
 }
 
-bool Tablero::removeOccupant(Position pos, int id)
+bool Tablero::removeOccupant(Position pos,EntityType type, int id)
 {
     pthread_mutex_lock(&board_mutex_);
     auto& occupants = matrix_[pos.y][pos.x].occupants;
     pthread_mutex_unlock(&board_mutex_);
 
     auto it = std::remove_if(
-        occupants.begin(),
-        occupants.end(),
-        [id](const Occupant& occ)
-        { return occ.entityId == id;});
+    occupants.begin(),
+    occupants.end(),
+    [type,id](const Occupant& occ)
+    {
+        return occ.type == type &&
+               occ.entityId == id;
+    }
+    );
 
     pthread_mutex_lock(&board_mutex_);
     occupants.erase(it, occupants.end());

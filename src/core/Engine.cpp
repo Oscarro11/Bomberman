@@ -142,6 +142,7 @@ void Engine::update(sf::Time dt)
         {
             tablero_.removeOccupant(
                 Position{it->getX(), it->getY()},
+                EntityType::Explosion,
                 it->getId()
             );
 
@@ -261,6 +262,10 @@ void Engine::procesarEvento(Evento& evento){
             onEnemyDeath(evento);
             break;
 
+        case EventType::ChainExplosion:
+            onChainExplosion(evento);
+            break;
+
 
         /*
             case EventType::PlayerDeath:
@@ -271,14 +276,6 @@ void Engine::procesarEvento(Evento& evento){
         case EventType::PlayerPickPowerUp:
             onPlayerPickPowerUp(evento);
             break;
-
-
-        case EventType::ChainExplosion:
-            onChainExplosion(evento);
-            break;
-
-
-
         
 
         case EventType::GameOver:
@@ -429,6 +426,19 @@ void Engine::onPlayerMove(Evento &evento)
 
     // Actualizar posicion interna del jugador
     player.setPosition(newPos.x, newPos.y);
+    
+
+    for (const Occupant& occ : cell.occupants)
+    {
+        if (occ.type == EntityType::Explosion)
+        {
+            danioPlayer(
+                player.id()
+            );
+
+            break;
+        }
+    }
 }
 
 void Engine::onEnemyMove(Evento& evento)
@@ -491,6 +501,25 @@ void Engine::onEnemyMove(Evento& evento)
         newPos.x,
         newPos.y
     );
+
+
+    for (const Occupant& occ : cell.occupants)
+    {
+        if (occ.type == EntityType::Explosion)
+        {
+            auto deathEvent =
+                enemigo.recibirDanio(enemigo);
+
+            if (deathEvent.has_value())
+            {
+                pushEvento(
+                    deathEvent.value()
+                );
+            }
+
+            break;
+        }
+    }
 }
 
 void Engine::moveEnemies() {
@@ -498,7 +527,7 @@ void Engine::moveEnemies() {
 
         if (!enemigos_[i].isAlive())
             continue;
-            
+
         Directions direction;
         int num = rand() % 4;
 
@@ -615,6 +644,7 @@ void Engine::onBombExplode(Evento& evento)
 
     tablero_.removeOccupant(
         pos,
+        EntityType::Bomb,
         bombId
     );
 
@@ -644,7 +674,7 @@ void Engine::createExplosion(Position pos, int creador)
     BoardCell cell = tablero_.getCell(pos);
 
     for (const Occupant& occ : cell.occupants)
-    {
+    {   
         if (occ.type == EntityType::Enemy)
         {
             Enemigo& enemigo = enemigos_[occ.entityId];
@@ -657,6 +687,25 @@ void Engine::createExplosion(Position pos, int creador)
                     deathEvent.value()
                 );
             }
+        }
+
+        if (occ.type == EntityType::Player1 ||
+            occ.type == EntityType::Player2 ||
+            occ.type == EntityType::Player3 ||
+            occ.type == EntityType::Player4)
+        {
+            danioPlayer(
+                occ.entityId
+            );
+        }
+
+        if (occ.type == EntityType::Bomb)
+        {
+            pushEvento(
+                Evento::chainExplosion(
+                    occ.entityId
+                )
+            );
         }
     }
 
@@ -740,8 +789,38 @@ void Engine::onEnemyDeath(Evento& evento)
 
     tablero_.removeOccupant(
         pos,
+        EntityType::Enemy,
         enemyId
     );
+}
+
+void Engine::onChainExplosion(Evento& evento)
+{
+    Position pos{
+        evento.posicionX(),
+        evento.posicionY()
+    };
+    for (auto it = bombas_.begin();
+     it != bombas_.end();
+     ++it)
+    {
+        if (it->getId() == evento.autor())
+        {
+            pushEvento(
+                Evento::bombExplode(
+                    it->getId(),
+                    it->getCreador(),
+                    it->getX(),
+                    it->getY(),
+                    it->getRadio()
+                )
+            );
+
+            bombas_.erase(it);
+
+            break;
+        }
+    }
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)

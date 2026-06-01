@@ -51,7 +51,7 @@ class Tablero {
         void setTerrain(Position p, TileType terrain);
 
         void addOccupant(Position p, const Occupant& occ);
-        bool removeOccupant(Position p, int id);
+        bool removeOccupant(Position p, EntityType type, int id);
         bool moveOccupant(Position from, Position to, int id);
 
         int getHeight() const {return matrix_.size();};
