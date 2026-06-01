@@ -24,6 +24,11 @@ Evento Evento::playerPlaceBomb(int autorId,  int posX, int posY)
     return Evento(EventType::PlayerPlaceBomb, autorId, -1, posX, posY, {});
 }
 
+Evento Evento::playerDamage(int autorId, int playerId, int posX, int posY)
+{
+    return Evento(EventType::PlayerDamage, autorId, playerId, posX, posY, {});
+}
+
 Evento Evento::playerDeath(int autorId, int playerId,  int posX,  int posY)
 {
     return Evento(EventType::PlayerDeath, autorId, playerId, posX, posY, {});

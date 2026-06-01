@@ -2,8 +2,8 @@
 
 EnemySystem::EnemySystem(
     std::vector<Enemigo>& enemies,
-    EventBus& bus,
-    Tablero& tablero)
+    Tablero& tablero,
+    EventBus& bus)
     : enemies_(enemies)
     , bus_(bus)
     , tablero_(tablero)

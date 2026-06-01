@@ -19,8 +19,6 @@ public:
 
     Bomba(int id, int creador, int x, int y, int radio, sf::Time duracion);
 
-    void generarEvento();
-
     int getId() const;
 
     int getCreador();

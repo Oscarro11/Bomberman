@@ -7,7 +7,7 @@
 
 class EnemySystem {
     public:
-        EnemySystem(std::vector<Enemigo>& enemies, EventBus& bus, Tablero& tablero);
+        EnemySystem(std::vector<Enemigo>& enemies, Tablero& tablero, EventBus& bus);
 
         void update(sf::Time dt);
         std::optional<int> processMove(const Evento& evento);

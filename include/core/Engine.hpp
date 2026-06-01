@@ -19,6 +19,7 @@
 #include "rendering/RenderSnapshot.hpp"
 #include "systems/EventBus.hpp"
 #include "systems/EnemySystem.hpp"
+#include "systems/BombSystem.hpp"
 
 struct PlayerStats;
 
@@ -38,6 +39,7 @@ class Engine : public IEngine
 
         EventBus eventBus_;
         EnemySystem enemiesSystem_;
+        BombSystem bombsSystem_;
 
         Tablero tablero_;
         std::vector<Player> jugadores_;
@@ -77,8 +79,6 @@ class Engine : public IEngine
         //void onPlayerDeath(Evento& evento);
         void onPlayerPlaceBomb(Evento& evento);
         void onBombExplode(Evento& evento);
-        void createExplosion(Position pos, int autor);
-        void explodeDirection(Position origen,int creador,int dx,int dy,int radio);
 
         void danioPlayer(int playerId);
         void onTileDestroyed(Evento& evento);

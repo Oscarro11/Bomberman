@@ -9,7 +9,8 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     , inputHandler_(this)
     , tablero_(tableroSource)
     , roundTimer_(sf::seconds(180.f))
-    , enemiesSystem_(enemigos_, eventBus_, tablero_)
+    , enemiesSystem_(enemigos_, tablero_, eventBus_)
+    , bombsSystem_(jugadores_, bombas_, explosiones_, enemigos_, tablero_, eventBus_)
 {
     pthread_mutex_init(&inputMutex_, NULL);
     pthread_mutex_init(&enemiesMutex_, NULL);
@@ -99,50 +100,9 @@ void Engine::update(sf::Time dt)
     roundTimer_ -= dt;
 
     enemiesSystem_.update(dt);
+    bombsSystem_.update(dt);
+
     updatePlayersState();
-
-    for (auto it = bombas_.begin(); it != bombas_.end(); )
-    {
-        if (it->expirada())
-        {
-            int creador = it->getCreador();
-
-            pushEvento(
-                Evento::bombExplode(
-                    it->getId(),
-                    it->getCreador(),
-                    it->getX(),
-                    it->getY(),
-                    it->getRadio()
-                )
-            );
-
-            it = bombas_.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-    for (auto it = explosiones_.begin();
-        it != explosiones_.end(); )
-    {
-        if (it->expirada())
-        {
-            tablero_.removeOccupant(
-                Position{it->getX(), it->getY()},
-                EntityType::Explosion,
-                it->getId()
-            );
-
-            it = explosiones_.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-
     updateGameState();
 }
 
@@ -209,6 +169,10 @@ void Engine::procesarEvento(Evento& evento){
             onBombExplode(evento);
             break;
 
+        case EventType::PlayerDamage:
+            danioPlayer(evento.objetivo());
+            break;
+
         case EventType::PlayerDeath:
             //onPlayerDeath(evento);
             break;
@@ -228,20 +192,6 @@ void Engine::procesarEvento(Evento& evento){
         case EventType::PlayerPickPowerUp:
             onPlayerPickPowerUp(evento);
             break;
-
-        /*
-        case EventType::PlayerDeath:
-            onPlayerDeath(evento);
-            break;
-
-        case EventType::GameOver:
-            onGameOver(evento);
-            break;
-
-        case EventType::RoundStart:
-            onRoundStart(evento);
-            break;
-        */
     }
 }
 
@@ -301,7 +251,18 @@ RenderSnapshot Engine::makeRenderSnapshot()
             // render first occupant only
             if (!cell.occupants.empty())
             {
-                snapshot.entities[y][x] = cell.occupants.front().type;
+                for (Occupant occ : cell.occupants) {
+                    if (occ.type == EntityType::Explosion)
+                    {
+                        snapshot.entities[y][x] = EntityType::Explosion;
+                        break;
+                    } 
+                }
+                
+                if (snapshot.entities[y][x] == EntityType::None)
+                {
+                    snapshot.entities[y][x] = cell.occupants.front().type;    
+                }
             }
         }
     }
@@ -464,42 +425,20 @@ void Engine::onPlayerPlaceBomb(Evento& evento)
 {
     int playerId = evento.autor();
 
-    if (playerId < 0 || playerId >= jugadores_.size())
+    if (playerId < 0 ||
+        playerId >= static_cast<int>(jugadores_.size()))
+    {
         return;
+    }
 
     Player& player = jugadores_[playerId];
 
-    Position pos = player.getPosition();
-
-    int bombaId = nextBombId_++;
-
-    const BoardCell& cell = tablero_.getCell(pos);
-
-    for (const Occupant& occ : cell.occupants)
-    {
-        if (occ.type == EntityType::Bomb)
-            return;
-    }
-
-    bombas_.push_back(
-        Bomba(
-            bombaId,
-            playerId,
-            pos.x,
-            pos.y,
-            player.rangoExplosion(),
-            sf::seconds(3.f)
-        )
+    bombsSystem_.placeBomb(
+        playerId,
+        player.posX(),
+        player.posY(),
+        player.rangoExplosion()
     );
-
-    tablero_.addOccupant(
-        pos,
-        Occupant{
-            EntityType::Bomb,
-            bombaId
-        }
-    );
-    
 }
 
 void Engine::onBombExplode(Evento& evento)
@@ -508,134 +447,7 @@ void Engine::onBombExplode(Evento& evento)
 
     jugadores_[creador].recuperarBomba();
 
-    Position pos{
-        evento.posicionX(),
-        evento.posicionY()
-    };
-
-    int bombId = evento.autor();
-
-    tablero_.removeOccupant(
-        pos,
-        EntityType::Bomb,
-        bombId
-    );
-
-    createExplosion(pos,creador);
-
-    int radio = evento.data().explosion.radio;
-    explodeDirection(pos, creador,  1,  0, radio); // derecha
-    explodeDirection(pos, creador, -1,  0, radio); // izquierda
-    explodeDirection(pos, creador,  0, -1, radio); // arriba
-    explodeDirection(pos, creador,  0,  1, radio); // abajo
-
-}
-
-void Engine::createExplosion(Position pos, int creador)
-{
-    int explosionId = nextExplosionId_++;
-
-    explosiones_.push_back(
-        Explosion(
-            explosionId,
-            pos.x,
-            pos.y,
-            sf::seconds(2.f) //Duracion de la explosion, pendiente de ajustar
-        )
-    );
-
-    BoardCell cell = tablero_.getCell(pos);
-
-    for (const Occupant& occ : cell.occupants)
-    {   
-        if (occ.type == EntityType::Enemy)
-        {
-            Enemigo& enemigo = enemigos_[occ.entityId];
-
-            auto deathEvent = enemigo.recibirDanio(jugadores_[creador]);
-
-            if (deathEvent.has_value())
-            {
-                pushEvento(
-                    deathEvent.value()
-                );
-            }
-        }
-
-        if (occ.type == EntityType::Player1 ||
-            occ.type == EntityType::Player2 ||
-            occ.type == EntityType::Player3 ||
-            occ.type == EntityType::Player4)
-        {
-            danioPlayer(
-                occ.entityId
-            );
-        }
-
-        if (occ.type == EntityType::Bomb)
-        {
-            pushEvento(
-                Evento::chainExplosion(
-                    occ.entityId
-                )
-            );
-        }
-    }
-
-    tablero_.addOccupant(
-        pos,
-        Occupant{
-            EntityType::Explosion,
-            explosionId
-        }
-    );
-}
-
-void Engine::explodeDirection(
-    Position origen,
-    int creador,
-    int dx,
-    int dy,
-    int radio
-)
-{
-    for (int i = 1; i <= radio; i++)
-    {
-        Position p{
-            origen.x + dx * i,
-            origen.y + dy * i
-        };
-
-        if (p.x < 0 ||
-            p.y < 0 ||
-            p.x >= tablero_.getWidth() ||
-            p.y >= tablero_.getHeight())
-        {
-            break;
-        }
-
-        BoardCell cell = tablero_.getCell(p);
-        
-        if (cell.terrainType == TileType::Wall)
-        {
-            break;
-        }
-
-        createExplosion(p, creador);
-
-        if (cell.terrainType == TileType::Breakable)
-        {
-            
-            pushEvento(
-                Evento::tileDestroyed(
-                    p.x,
-                    p.y
-                )
-            );
-            break;
-        }
-        
-    }
+    bombsSystem_.explodeBomb(evento);
 }
 
 void Engine::onTileDestroyed(Evento& evento)
@@ -650,7 +462,7 @@ void Engine::onTileDestroyed(Evento& evento)
         TileType::Floor
     );
 
-    if (rand() % 100 < 100)
+    if (rand() % 100 < 20)
     {
         PowerUpType tipo =
             static_cast<PowerUpType>(

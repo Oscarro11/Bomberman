@@ -3,6 +3,7 @@
 enum EventType{
     PlayerMove,
     PlayerPlaceBomb,
+    PlayerDamage,
     PlayerDeath,
     PlayerPickPowerUp,
     BombExplode,
@@ -37,6 +38,7 @@ class Evento
         //Constructores de fabrica
         static Evento playerMove(int autorId, int posX, int posY, int dx, int dy);
         static Evento playerPlaceBomb(int autorId, int posX, int posY);
+        static Evento playerDamage(int autorId, int playerId, int posX, int posY);
         static Evento playerDeath(int autorId, int playerId, int posX, int posY);
         static Evento playerPickPowerUp(int autorId, int powerUpId, int posX, int posY, int powerUpTipo);
         static Evento enemyMove(int enemyId, int posX, int posY, int dx, int dy);
@@ -45,7 +47,6 @@ class Evento
         static Evento enemyDeath(int enemyId, int autorId, int posX, int posY);
         static Evento chainExplosion(int bombId);
         /*
-        static Evento chainExplosion(int bombId);
         static Evento gameOver();
         static Evento roundStart(); 
         */
