@@ -47,15 +47,10 @@ class Engine : public IEngine
         std::vector<Bomba> bombas_;
         std::vector<Explosion> explosiones_;
         std::vector<PowerUp> powerUps_;
-        std::vector<PowerUp> powerUps_;
 
-        int nextExplosionId_ = 0;
-        int nextBombId_ = 0;
+        bool singlePlayer_ = true;
 
         sf::Time roundTimer_;
-
-        /*
-        */
         pthread_t logicThread_;
 
         //Clase dedica a leer inputs, tiene su propio hilo
@@ -86,10 +81,6 @@ class Engine : public IEngine
         void onEnemyDeath(Evento& evento);
         void onChainExplosion(Evento& evento);
         void onPlayerPickPowerUp(Evento& evento);
-
-        //void updateBombs(sf::Time dt);
-        //void updateExplosions(sf::Time dt);
-        //void updatePowerUps();
 
     public:
         Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores);

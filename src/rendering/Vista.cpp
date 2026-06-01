@@ -67,9 +67,7 @@ void Vista::handleEvent(const sf::Event& event)
 
         cachedStats_.clear();
 
-        cachedStats_.push_back(
-            PlayerStats{1,1,1}
-        );
+        cachedStats_.push_back(PlayerStats{});
 
         startGame_ = true;
         return;

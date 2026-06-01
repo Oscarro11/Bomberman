@@ -10,28 +10,28 @@
 class Screen;
 
 class Vista {
-    public:
-        Vista(sf::RenderWindow& window, sf::Font& font);
-        ~Vista();
+        public:
+                Vista(sf::RenderWindow& window, sf::Font& font);
+                ~Vista();
 
-        void handleEvent(const sf::Event& event);
-        void render();
-        bool shouldStartGame() const { return startGame_; }
-        std::vector<PlayerStats> getPlayerStats() const;
+                void handleEvent(const sf::Event& event);
+                void render();
+                bool shouldStartGame() const { return startGame_; }
+                std::vector<PlayerStats> getPlayerStats() const;
 
-        void updateSnapshot(RenderSnapshot& snap);
-        void transitionToGame();
-        Difficulty getDifficulty() const;
-        
+                void updateSnapshot(RenderSnapshot& snap);
+                void transitionToGame();
                 void transitionToGameOver(std::string winnerName, int winnerId);
 
+                Difficulty getDifficulty() const;
+
         private:
-        std::vector<PlayerStats> cachedStats_;
-        Difficulty cachedDifficulty_ =
-        Difficulty::Easy;
-        
-        sf::RenderWindow& window_;
-        sf::Font&         font_;
-        Screen*           currentScreen_;   // owns the active screen
-        bool              startGame_ = false;
+                std::vector<PlayerStats> cachedStats_;
+                Difficulty cachedDifficulty_ =
+                Difficulty::Easy;
+                
+                sf::RenderWindow& window_;
+                sf::Font&         font_;
+                Screen*           currentScreen_;   // owns the active screen
+                bool              startGame_ = false;
 };
