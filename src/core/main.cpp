@@ -29,8 +29,8 @@ int main() {
     // Hand off to game loop
     if (vista.shouldStartGame()) {
         std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
-        Engine engine("mapa2.txt", playerInfo);
-        //Engine engine("mapa_test_enemigos.txt", playerInfo);
+        //Engine engine("mapa2.txt", playerInfo);
+        Engine engine("mapa_test_enemigos.txt", playerInfo);
         engine.start();
 
         InputHandler inputHandler(&engine);

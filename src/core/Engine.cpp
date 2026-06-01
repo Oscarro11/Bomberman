@@ -399,15 +399,6 @@ void Engine::onPlayerMove(Evento &evento)
 
     }
 
-    // Limites del tablero
-    if (newPos.x < 0 ||
-        newPos.y < 0 ||
-        newPos.y >= tablero_.matrix().size() ||
-        newPos.x >= tablero_.matrix()[0].size())
-    {
-        return;
-    }
-
     // Verificar si se puede caminar
     if (!tablero_.isWalkable(newPos))
     {

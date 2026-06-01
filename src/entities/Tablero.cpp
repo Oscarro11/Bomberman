@@ -95,7 +95,10 @@ bool Tablero::isWalkable(Position p) const {
 
     for (Occupant entity : occupants)
     {
-        if (entity.type == EntityType::Player ||
+        if (entity.type == EntityType::Player1 ||
+            entity.type == EntityType::Player2 ||
+            entity.type == EntityType::Player3 ||
+            entity.type == EntityType::Player4 ||
             entity.type == EntityType::Enemy ||
             entity.type == EntityType::Bomb)
             return false;
