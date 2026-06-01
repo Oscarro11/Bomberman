@@ -1,6 +1,7 @@
 #include "core/Engine.hpp"
 #include "ecs/PlayerStats.hpp"
 #include "entities/Enemigo.hpp"
+#include "entities/PowerUp.hpp"
 #include "utils/AssetsUtils.hpp"
 
 
@@ -266,6 +267,9 @@ void Engine::procesarEvento(Evento& evento){
             onChainExplosion(evento);
             break;
 
+        case EventType::PlayerPickPowerUp:
+            onPlayerPickPowerUp(evento);
+            break;
 
         /*
             case EventType::PlayerDeath:
@@ -273,9 +277,6 @@ void Engine::procesarEvento(Evento& evento){
                 break;
 
 
-        case EventType::PlayerPickPowerUp:
-            onPlayerPickPowerUp(evento);
-            break;
         
 
         case EventType::GameOver:
@@ -395,6 +396,7 @@ void Engine::onPlayerMove(Evento &evento)
             danioPlayer(player.id());
             return;
         }
+
     }
 
     // Limites del tablero
@@ -437,6 +439,22 @@ void Engine::onPlayerMove(Evento &evento)
             );
 
             break;
+        }
+
+        if (occ.type == EntityType::PowerUpItem)
+        {
+            PowerUp& powerUp = powerUps_[occ.entityId];
+            pushEvento(
+                Evento::playerPickPowerUp(
+                    player.id(),
+                    occ.entityId,
+                    newPos.x,
+                    newPos.y,
+                    static_cast<int>(
+                        powerUp.tipo()
+                    )
+                )
+            );
         }
     }
 }
@@ -776,6 +794,30 @@ void Engine::onTileDestroyed(Evento& evento)
         pos,
         TileType::Floor
     );
+
+    if (rand() % 100 < 100)
+    {
+        PowerUpType tipo =
+            static_cast<PowerUpType>(
+                rand() % 3
+            );
+        
+        powerUps_.push_back(
+            PowerUp(
+                tipo,
+                pos.x,
+                pos.y
+            )
+        );
+
+        tablero_.addOccupant(
+            pos,
+            Occupant{
+                EntityType::PowerUpItem,
+                static_cast<int>(powerUps_.size() - 1)
+            }
+        );
+    }
 }
 
 void Engine::onEnemyDeath(Evento& evento)
@@ -821,6 +863,37 @@ void Engine::onChainExplosion(Evento& evento)
             break;
         }
     }
+}
+
+void Engine::onPlayerPickPowerUp(
+    Evento& evento
+)
+{
+    int playerId =
+        evento.autor();
+
+    int powerUpId =
+        evento.objetivo();
+
+    PowerUpType tipo =
+        static_cast<PowerUpType>(
+            evento.data().powerUp.tipo
+        );
+
+    jugadores_[playerId]
+        .actualizarStat(
+            tipo,
+            1
+        );
+
+    tablero_.removeOccupant(
+        Position{
+            evento.posicionX(),
+            evento.posicionY()
+        },
+        EntityType::PowerUpItem,
+        powerUpId
+    );
 }
 
 void Engine::handleInput(sf::Keyboard::Key key, int playerId)

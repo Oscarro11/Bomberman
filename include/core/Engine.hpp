@@ -14,6 +14,7 @@
 #include "entities/Bomba.hpp"
 #include "entities/Enemigo.hpp"
 #include "entities/Explosion.hpp"
+#include "entities/PowerUp.hpp"
 #include "input/InputHandler.hpp"
 #include "rendering/RenderSnapshot.hpp"
 
@@ -29,6 +30,7 @@ class Engine : public IEngine
         std::vector<Bomba> bombas_;
         std::queue<Evento> listaEventos_;
         std::vector<Explosion> explosiones_;
+        std::vector<PowerUp> powerUps_;
 
         int nextExplosionId_ = 0;
         int nextBombId_ = 0;
@@ -40,7 +42,6 @@ class Engine : public IEngine
         static constexpr float ENEMY_MOVE_INTERVAL = 2.4f;   // seconds between moves
 
         /*
-        vector<PowerUp> listaPowerUps;
         */
 
         pthread_t logicThread_;
@@ -82,6 +83,7 @@ class Engine : public IEngine
         void onTileDestroyed(Evento& evento);
         void onEnemyDeath(Evento& evento);
         void onChainExplosion(Evento& evento);
+        void onPlayerPickPowerUp(Evento& evento);
 
         //void updateBombs(sf::Time dt);
         //void updateExplosions(sf::Time dt);

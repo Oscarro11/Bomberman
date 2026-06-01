@@ -57,6 +57,7 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
     {
         case maxBomb: 
             this -> maxBombas_ += cantidad;
+            this -> restBombas_ += cantidad;
             break;
         case explosionRange: 
             this -> rangoExplosion_ += cantidad;
