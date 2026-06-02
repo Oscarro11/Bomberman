@@ -1,13 +1,8 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+
 #include "rendering/Screen.hpp"
-
-
-class EmptyScreen : public Screen {
-    public:
-        Screen* handleInput(sf::Keyboard::Key key) override;
-        void render(sf::RenderWindow& window, const sf::Font& font) const override;
-};
 
 class MainMenuScreen : public Screen {
     public:

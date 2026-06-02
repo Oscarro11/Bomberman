@@ -1,24 +1,21 @@
 #pragma once
 
-class Enemigo
+#include "entities/Personaje.hpp"
+#include "ecs/Evento.hpp"
+
+class Enemigo : public Personaje
 {
-private:
+    private:
+        int tipo_;
+        int alcance_;
 
-    int tipo;
+        bool alive_;
 
-    bool recibioDano;
+    public:
+        Enemigo(int id, int tipo, int alcance, int x, int y);
+        Evento generarEventoMov(Directions direction) override;
+        std::optional<Evento> recibirDanio(const Personaje& atacante) override;
 
-    int alcance;
-
-    int posX;
-
-    int posY;
-
-public:
-
-    Enemigo(int tipo, int alcance, int x, int y);
-
-    int getX();
-
-    int getY();
+        inline bool alive() const {return alive_;}
+        inline void kill() { alive_ = false;}
 };

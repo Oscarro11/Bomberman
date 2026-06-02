@@ -1,159 +1,192 @@
 #include "entities/Tablero.hpp"
+#include "utils/GameConstants.hpp"
+#include "utils/AssetsUtils.hpp"
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
+#include <algorithm>
 
-Tablero::Tablero(string source)
+Tablero::Tablero(const std::string& source)
 {
-    ifstream archivo(source);
+    pthread_mutex_init(&board_mutex_, NULL);
 
-    if (!archivo.is_open())
-    {
-        cout << "No se pudo abrir el mapa\n";
-        return;
-    }
-
-    //pthread_mutex_init(&boardAccessMutex, NULL);
-
-    string linea;
-    int y = 0;
-
-    while (getline(archivo, linea))
-    {
-        vector<CellContent> fila;
-
-        for (int i = 0; i < linea.size(); i++)
-        {
-            char c = linea[i];
-
-            switch(c)
-            {
-                case '@':
-                {
-                    listaSpawnPlayers[0] = CellSpawn{Cell{i, y}, 11};
-                    fila.push_back(CellContent{Player1, 11});
-                    break;
-                }
-
-                case '$':
-                {
-                    listaSpawnPlayers[1] = CellSpawn{Cell{i, y}, 12};
-                    fila.push_back(CellContent{Player2, 12});
-                    break;
-                }
-
-                case '1':
-                {
-                    listaSpawnEnemies.push_back(CellSpawn{Cell{i, y}, 21 + (int) listaSpawnEnemies.size()});
-                    fila.push_back(CellContent{Enemy, 20 + listaSpawnEnemies.size()});
-                    break;
-                }
-
-                //This case shouldnt exist, as no bombs are preloaded
-                case '!':
-                {
-                    fila.push_back(CellContent{Bomb, 30});
-                    break;
-                }
-
-                //This case shouldnt exist, as no explosions are preloaded
-                case '0':
-                    fila.push_back(CellContent{Explosion, 40});
-                    break;
-
-                case '#':
-                    fila.push_back(CellContent{Wall, nullopt});
-                    break;
-
-                case '+':
-                    fila.push_back(CellContent{DestructibleWall, nullopt});
-                    break;
-
-                case '/':
-                    fila.push_back(CellContent{Hole, nullopt});
-                    break;
-
-                case '.':
-                    fila.push_back(CellContent{Floor, nullopt});
-                    break;
-
-                case '?':
-                {
-                    listaSpawnPowerUps.push_back(CellSpawn{Cell{i, y}, 81 + (int) listaSpawnPowerUps.size()});
-                    fila.push_back(CellContent{PowerUpItem, 80 + listaSpawnPowerUps.size()});
-
-                    break;
-                }
-
-                default:
-                    fila.push_back(CellContent{Floor, nullopt});
-                    break;
-            }
-        }
-
-        tablero.push_back(fila);
-    }
-
-    archivo.close();
+    loadMap(source);
 }
 
 Tablero::~Tablero()
 {
-    //pthread_mutex_destroy(&boardAccessMutex);
+    pthread_mutex_destroy(&board_mutex_);
 }
 
-CellContent Tablero::getCell(Cell cell)
+void Tablero::loadMap(const std::string& source)
 {
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero[cell.y][cell.x];
-    ////pthread_mutex_unlock(&boardAccessMutex);
-}
+    std::filesystem::path path = AssetPaths::MAPS / source;
+    std::ifstream file(path);
 
-void Tablero::setCell(BoardElement type, int id, Cell cell)
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    tablero[cell.y][cell.x] = CellContent{type, id};
-    //pthread_mutex_unlock(&boardAccessMutex);
-}
-
-std::array<CellSpawn, 4> Tablero::getPlayersSpawn()
-{
-    return listaSpawnPlayers;
-};
-
-std::vector<CellSpawn> Tablero::getEnemiesSpawn()
-{
-    return listaSpawnEnemies;
-}
-
-std::vector<CellSpawn> Tablero::getPowerUpsSpawn()
-{
-    return listaSpawnPowerUps;
-}
-
-
-int Tablero::getWidth()
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero.size();
-    //pthread_mutex_unlock(&boardAccessMutex);
-}
-
-int Tablero::getHeight()
-{
-    //pthread_mutex_lock(&boardAccessMutex);
-    if (tablero.empty())
+    if (!file)
     {
-        return 0;
+        throw std::runtime_error(
+            "Could not open map file: " + source
+        );
     }
 
-    return tablero[0].size();
-    //pthread_mutex_unlock(&boardAccessMutex);
+    std::string line;
+    int y = 0;
+
+    pthread_mutex_lock(&board_mutex_);
+    while (std::getline(file, line))
+    {
+        std::vector<BoardCell> row;
+
+        for (int x = 0; x < line.size(); ++x)
+        {
+            BoardCell cell;
+            char c = line[x];
+
+            switch (c)
+            {
+                case '#': cell.terrainType = TileType::Wall;        break;
+                case '+': cell.terrainType = TileType::Breakable;   break;
+                case '/': cell.terrainType = TileType::Hole;        break;
+                case '.': cell.terrainType = TileType::Floor;       break;
+
+                case '@':
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPlayers_[0] = SpawnPoint{Position{x, y}, 1};
+                    break;
+
+                case '$':
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPlayers_[1] = SpawnPoint{Position{x, y}, 2};
+                    break;
+
+                case '1':
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnEnemies_.push_back(Position{x, y});
+                    break;
+
+                case '?':
+                    cell.terrainType = TileType::Floor;
+                    listaSpawnPowerUps_.push_back(Position{x, y});
+                    break;
+            }
+
+            row.push_back(cell);
+        }
+
+        matrix_.push_back(row);
+
+        ++y;
+    }
+    pthread_mutex_unlock(&board_mutex_);
 }
 
-vector<vector<CellContent>> Tablero::getBoard()
+bool Tablero::isWalkable(Position p) const {
+
+    pthread_mutex_lock(&board_mutex_);
+    if (matrix_[p.y][p.x].terrainType != TileType::Floor){
+        pthread_mutex_unlock(&board_mutex_);
+        return false;
+    }
+    
+    std::vector<Occupant> occupants = matrix_[p.y][p.x].occupants;
+    pthread_mutex_unlock(&board_mutex_);
+
+    for (Occupant entity : occupants)
+    {
+        if (entity.type == EntityType::Player1 ||
+            entity.type == EntityType::Player2 ||
+            entity.type == EntityType::Player3 ||
+            entity.type == EntityType::Player4 ||
+            entity.type == EntityType::Enemy ||
+            entity.type == EntityType::Bomb)
+            return false;
+    }
+    
+    return true;
+}
+
+const BoardCell Tablero::getCell(Position p) const
 {
-    //pthread_mutex_lock(&boardAccessMutex);
-    return tablero;
-    //pthread_mutex_unlock(&boardAccessMutex);
+    pthread_mutex_lock(&board_mutex_);
+    BoardCell copy = matrix_[p.y][p.x];
+    pthread_mutex_unlock(&board_mutex_);
+
+    return copy;
+}
+
+//This method resets the tile in the position parameter
+void Tablero::setTerrain(Position p, TileType terrain)
+{
+    pthread_mutex_lock(&board_mutex_);
+    matrix_[p.y][p.x] = BoardCell{terrain, std::vector<Occupant>()};
+    pthread_mutex_unlock(&board_mutex_);
+}
+
+void Tablero::addOccupant(Position p, const Occupant &occ)
+{
+    pthread_mutex_lock(&board_mutex_);
+    matrix_[p.y][p.x].occupants.push_back(occ);
+    pthread_mutex_unlock(&board_mutex_);
+}
+
+bool Tablero::removeOccupant(Position pos,EntityType type, int id)
+{
+    pthread_mutex_lock(&board_mutex_);
+    auto& occupants = matrix_[pos.y][pos.x].occupants;
+    pthread_mutex_unlock(&board_mutex_);
+
+    auto it = std::remove_if(
+    occupants.begin(),
+    occupants.end(),
+    [type,id](const Occupant& occ)
+    {
+        return occ.type == type &&
+               occ.entityId == id;
+    }
+    );
+
+    pthread_mutex_lock(&board_mutex_);
+    occupants.erase(it, occupants.end());
+    pthread_mutex_unlock(&board_mutex_);
+
+    bool removed = (it != occupants.end());
+    return removed;
+}
+
+bool Tablero::moveOccupant(Position from, Position to, int id)
+{
+    pthread_mutex_lock(&board_mutex_);
+    auto& fromOcc = matrix_[from.y][from.x].occupants;
+    pthread_mutex_unlock(&board_mutex_);
+
+    auto it = std::find_if(
+        fromOcc.begin(),
+        fromOcc.end(),
+        [id](const Occupant& occ)
+        { return occ.entityId == id;});
+
+    if (it == fromOcc.end())
+    {
+        return false;
+    }
+
+    Occupant occ = *it;
+
+    pthread_mutex_lock(&board_mutex_);
+    fromOcc.erase(it);
+    matrix_[to.y][to.x].occupants.push_back(occ);
+    pthread_mutex_unlock(&board_mutex_);
+
+    return true;
+}
+
+const std::vector<std::vector<BoardCell>> Tablero::matrix() const
+{
+    pthread_mutex_lock(&board_mutex_);
+    auto copy = matrix_;
+    pthread_mutex_unlock(&board_mutex_);
+
+    return copy;
 }

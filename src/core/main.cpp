@@ -1,65 +1,159 @@
 #include "rendering/Vista.hpp"
 #include "core/Engine.hpp"
 #include "input/InputHandler.hpp"
+#include "utils/ScreenUtils.hpp"
+#include "ecs/PlayerStats.hpp"
+
+enum class AppState
+{
+    Menu,
+    Playing,
+    GameOver
+};
 
 int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
     sf::Font font;
     font.loadFromFile("assets/fonts/consola.ttf");
+    
+    ScreenUtils::setCharSize(window);
+    ScreenUtils::measureFont(font);
 
     Vista vista(window, font);
     sf::Clock clock;
     
-    // Menu loop — runs until player hits Start
-    while (window.isOpen() && !vista.shouldStartGame()) {
-        sf::Event event;
+    AppState appState = AppState::Menu;
 
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
+    Engine* engine = nullptr;
+    InputHandler* inputHandler = nullptr;
+
+    // Menu loop — runs until player hits Start
+    while (window.isOpen())
+    {
+        sf::Event event;
+        std::vector<sf::Keyboard::Key> pressedKeys;
+
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+
+            if (event.type == sf::Event::KeyPressed)
+            {
+                pressedKeys.push_back(event.key.code);
+            }
+
             vista.handleEvent(event);
         }
-        vista.render();
-    }
 
-    /*
-    // Hand off to game loop
-    if (vista.shouldStartGame()) {
-        std::vector<PlayerInfo> playerInfo;
-        
-        for (PlayerConfig config: vista.get_players_info())
+        switch (appState)
         {
-            playerInfo.push_back(PlayerInfo{config.vida, config.maxBombas, config.rangoExplosion, config.velocidad});
-        }
+            case AppState::Menu:
+                {
+                    if (vista.shouldStartGame()){
+                        std::vector<PlayerStats> playerInfo =
+                        vista.getPlayerStats();
 
-        Engine engine("map.txt", playerInfo);
-        InputHandler inputHandler(&engine);
-        vista.clear();
+                        Difficulty difficulty =
+                            vista.getDifficulty();
 
-        while (window.isOpen() && engine.running())
-        {
-            sf::Event event;
-            std::vector<sf::Keyboard::Key> pressedKeys;
-            sf::Time dt = clock.restart();
+                        std::string mapa = "mapa2.txt";
 
-            while (window.pollEvent(event))
+                        if (playerInfo.size() == 1)
+                        {
+                            switch (difficulty)
+                            {
+                                case Difficulty::Easy:
+                                    mapa = "mapa_sp_uno.txt";
+                                    break;
+
+                                case Difficulty::Medium:
+                                    mapa = "mapa_sp_dos.txt";
+                                    break;
+
+                                case Difficulty::Hard:
+                                    mapa = "mapa_sp_tres.txt";
+                                    break;
+                            }
+                        }
+
+                        engine = new Engine(mapa, playerInfo);
+                        engine->start();
+
+                        inputHandler =
+                            new InputHandler(engine);
+
+                        vista.transitionToGame();
+
+                        vista.consumeStartGame();
+
+                        appState = AppState::Playing;
+                    }
+
+                vista.render();
+                break;
+            }
+
+            case AppState::Playing:
             {
-                if (event.type == sf::Event::Closed)
+                sf::Time dt = clock.restart();
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 {
                     window.close();
+                    break;
                 }
-                else if (event.type == sf::Event::KeyPressed){
-                    pressedKeys.push_back(event.key.code);
+
+                if (engine)
+                {
+                    inputHandler->update(pressedKeys);
+
+                    engine->update(dt);
+
+                    auto snapshot =
+                        engine->makeRenderSnapshot();
+
+                    vista.updateSnapshot(snapshot);
+
+                    if (engine->isFinished())
+                    {
+                        vista.transitionToGameOver(
+                            engine->getWinnerName(),
+                            engine->getWinnerId()
+                        );
+
+                        delete inputHandler;
+                        inputHandler = nullptr;
+
+                        delete engine;
+                        engine = nullptr;
+
+                        appState = AppState::GameOver;
+                    }
                 }
+
+                vista.render();
+                break;
             }
             
-            if (pressedKeys.size() > 0)
+            case AppState::GameOver:
             {
-                inputHandler.update(pressedKeys);
+                vista.render();
+
+                if (vista.isOnMainMenu())
+                {
+                    appState = AppState::Menu;
+                }
+
+                break;
             }
-            
+            sf::sleep(sf::milliseconds(16));
         }
     }
-    */
 
+    delete inputHandler;
+    delete engine;
     return 0;
 }

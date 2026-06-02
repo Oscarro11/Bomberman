@@ -1,20 +1,9 @@
 #include "rendering/MainMenuScreen.hpp"
 #include "rendering/InstructionsScreen.hpp"
-#include "rendering/GameScreen.hpp"
 #include "rendering/ScoresScreen.hpp"
-
-#include "core/Engine.hpp"
-//#include "rendering/MultiplayerScreen.hpp"
-
-Screen *EmptyScreen::handleInput(sf::Keyboard::Key key)
-{
-    return nullptr;
-}
-
-void EmptyScreen::render(sf::RenderWindow &window, const sf::Font &font) const
-{
-
-}
+#include "rendering/MultiplayerScreen.hpp"
+#include "rendering/SingleplayerScreen.hpp"
+#include "rendering/GameScreen.hpp"
 
 Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
 {
@@ -25,24 +14,13 @@ Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
     
     if (key == sf::Keyboard::Return) {
         if (selectedOption_ == 0) return new InstructionsScreen;
-        if (selectedOption_ == 1)
-        {
-            //Example scores, should be removed later
-            std::vector<ScoreEntry> scores = 
-                {ScoreEntry{"Ana", 2000, 1, 2},
-                 ScoreEntry{"Pablo", 2500, 3, 3},
-                 ScoreEntry{"Juan", 4000, 3, 2},
-                 ScoreEntry{"Mateo", 6000, 5, 3}};
-
-            return new ScoresScreen(scores);
-        }
-            
-        //if (selectedOption_ == 2) return new InstructionsScreen;     //One player mode
-        if (selectedOption_ == 3) return new GameScreen;    //Multi player mode, just a preview
-        if (selectedOption_ == 4) return new EmptyScreen;   // quit handled by Vista
+        if (selectedOption_ == 1) return new ScoresScreen;            
+        if (selectedOption_ == 2) return new SinglePlayerConfigurationScreen;
+        if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;
+        if (selectedOption_ == 4) return new ExitScreen;
     }
     
-    return nullptr;   // stay on this screen
+    return Screen::STAY;   // stay on this screen
 }
 
 void MainMenuScreen::render(sf::RenderWindow &window, const sf::Font &font) const

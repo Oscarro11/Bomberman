@@ -1,18 +1,25 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+
 #include "rendering/Screen.hpp"
-#include "entities/Tablero.hpp"
-#include "utils/ScreenUtils.hpp"
+#include "rendering/RenderSnapshot.hpp"
 
 class GameScreen : public Screen {
     public:
-        GameScreen();
-    
         Screen* handleInput(sf::Keyboard::Key key) override;
-        void render(sf::RenderWindow& window, const sf::Font& font) const override;
+
+        // New signature — takes snapshot instead of accessing Tablero directly
+        void render(sf::RenderWindow& window,
+                    const sf::Font& font) const;
+            
+        // Called before render() each frame to feed the snapshot
+        void update(const RenderSnapshot& snapshot);
 
     private:
+        RenderSnapshot snapshot_;   // stored copy, render reads from this
 
-        //TODO: this class shouldnt know the board directly, instead using Snapshots from the Engine to render
-        Tablero* tablero_;
+        void renderHUD (sf::RenderWindow&, const sf::Font&, int row) const;
+        void renderBoard (sf::RenderWindow&, const sf::Font&, int startRow) const;
+        void renderPlayerCards(sf::RenderWindow&, const sf::Font&, int startRow) const;
 };

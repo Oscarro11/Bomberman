@@ -2,11 +2,21 @@
 #include "ecs/Evento.hpp"
 #include "entities/Player.hpp"
 
+#include <iostream>
+
 //These test requiere that the Evento constructor is public
 void runTest(){
-    Player player = Player(1, 3, 3, 5.f, 5, 7);
-    Evento event = player.colocarBomba();
-    Evento eventManual = Evento::manualEvent(EventType::PlayerPlaceBomb, 1, -1, 5, 7, {});
+    std::string name = "Marco";
+    Player player = Player(1, name, 3, 3, 3, 5, 5);
+
+    std::optional<Evento> temp = player.colocarBomba();
+    Evento eventManual = Evento::manualEvent(EventType::PlayerPlaceBomb, 1, -1, 5, 5, {});
+    Evento event = Evento::manualEvent(EventType::BombExplode, 0, 0, 0, 0, {});
+
+    if (temp.has_value())
+    {
+        event = temp.value();
+    } 
 
     assert(eventManual.autor() == event.autor());
     assert(eventManual.posicionX() == event.posicionX());
@@ -17,5 +27,7 @@ void runTest(){
 
 int main() {
     runTest();
+
+    printf("PlayerTest se completo con exito\n");
     return 0;
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rendering/Screen.hpp"
-#include "rendering/MainMenuScreen.hpp"
 
 class InstructionsScreen : public Screen {
     public:

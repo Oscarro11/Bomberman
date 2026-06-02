@@ -1,15 +1,20 @@
 #pragma once
+
 #include <optional>
+
 #include "ecs/Evento.hpp"
 #include "utils/Directions.hpp"
+#include "utils/Position.hpp"
 
 class Personaje
 {
 protected:
     int id_;
-    unsigned int posX_;
-    unsigned int posY_;
-    unsigned int vida_;
+    int posX_;
+    int posY_;
+    int vida_;
+
+    bool recibioDanio_;
 
 public:
     virtual ~Personaje() = default;
@@ -18,4 +23,16 @@ public:
     virtual std::optional<Evento> recibirDanio(const Personaje& atacante) = 0;
 
     int id() const {return id_;};
+    int posX() const {return posX_;};
+    int posY() const {return posY_;};
+    int vida() const {return vida_;};
+    bool isAlive() const {return vida_ > 0;};
+    
+    void setPosition(int x, int y)
+    {
+        posX_ = x;
+        posY_ = y;
+    }
+
+    Position getPosition(){return Position{posX_, posY_};};
 };

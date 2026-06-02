@@ -1,19 +1,15 @@
 #pragma once
 
-#include "rendering/Screen.hpp"
 #include <vector>
 #include <string>
+#include <SFML/Graphics.hpp>
 
-struct ScoreEntry {
-    std::string name;
-    int         score;
-    int         wins;
-    int         deaths;
-};
+#include "systems/ScoreManager.hpp"
+#include "rendering/Screen.hpp"
 
 class ScoresScreen : public Screen {
     public:
-        explicit ScoresScreen(const std::vector<ScoreEntry>& scores);
+        ScoresScreen();
 
         Screen* handleInput(sf::Keyboard::Key key) override;
         void    render(sf::RenderWindow& window,

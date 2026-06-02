@@ -1,5 +1,9 @@
 #include "rendering/Vista.hpp"
 #include "rendering/MainMenuScreen.hpp"
+#include "rendering/MultiplayerScreen.hpp"
+#include "rendering/SingleplayerScreen.hpp"
+#include "rendering/GameScreen.hpp"
+#include "rendering/MultiplayerGameOverScreen.hpp"
 #include "utils/ScreenUtils.hpp"
 #include <sstream>
 
@@ -8,42 +12,92 @@ Vista::Vista(sf::RenderWindow& window, sf::Font& font)
     , font_(font)
     , currentScreen_(new MainMenuScreen)
 {
-    ScreenUtils::setCharSize(window);
 }
 
 Vista::~Vista() {
     delete currentScreen_;
 }
 
-void Vista::handleEvent(const sf::Event& event) {
-    if (event.type != sf::Event::KeyPressed) return;
+void Vista::handleEvent(const sf::Event& event)
+{
+    if (event.type != sf::Event::KeyPressed)
+        return;
 
-    Screen* next = currentScreen_ -> handleInput(event.key.code);
+    Screen* next =
+        currentScreen_->handleInput(
+            event.key.code
+        );
 
-    if (next != nullptr) {
-        /*
-        // Check if NewGameScreen signaled start
-        if (dynamic_cast<NewMultiplayerMenuScreen*>(currentScreen_) &&
-            dynamic_cast<MainMenuScreen*>(next)) {
-            // back to main — not starting
-        }
-        if (dynamic_cast<NewMultiplayerMenuScreen*>(next) == nullptr &&
-            dynamic_cast<SettingsScreen*>(next) == nullptr) {
-            startGame_ = true;   // no known screen → start game
-            return;
-        }
-        */
-
-        if (dynamic_cast<EmptyScreen*>(next))
-        {
-            window_.close();
-            return;
-        }
-        
-       
-        delete currentScreen_;
-        currentScreen_ = next;
+    // No transition
+    if (next == nullptr ||
+        next == currentScreen_)
+    {
+        return;
     }
+
+    // Exit screen
+    if (dynamic_cast<ExitScreen*>(next))
+    {
+        window_.close();
+        return;
+    }
+
+    // Start game transition to Multiplayer
+    if (dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_) &&
+        dynamic_cast<StartScreen*>(next))
+    {
+        auto* mpScreen = dynamic_cast<MultiplayerConfigurationScreen*>(currentScreen_);
+        cachedStats_.clear();
+        for (const PlayerConfig* config : mpScreen->getPlayerConfigs()) {
+            cachedStats_.push_back(PlayerStats{config -> stats.nombre, config -> stats.maxBombas, config -> stats.rangoExplosion});
+        }
+
+        startGame_ = true;
+        return;
+    }
+    // Start game transition to Singleplayer
+    if (dynamic_cast<SinglePlayerConfigurationScreen*>(currentScreen_) &&
+        dynamic_cast<StartScreen*>(next))
+    {
+        auto* spScreen =
+            dynamic_cast<SinglePlayerConfigurationScreen*>(currentScreen_);
+
+        cachedDifficulty_ =
+            spScreen->getDifficulty();
+
+        cachedStats_.clear();
+
+        cachedStats_.push_back(PlayerStats{spScreen->getPlayerName(), 3, 3, 0});
+
+        startGame_ = true;
+        return;
+    }
+
+    delete currentScreen_;
+    currentScreen_ = next;
+}
+
+void Vista::transitionToGame() {
+    delete currentScreen_;
+    currentScreen_ = new GameScreen();
+}
+
+void Vista::transitionToGameOver(std::string winnerName, int winnerId)
+{
+    delete currentScreen_;
+    currentScreen_ = new GameOverScreen(winnerName, winnerId);
+}
+
+void Vista::transitionToMainMenu()
+{
+    delete currentScreen_;
+    currentScreen_ = new MainMenuScreen;
+}
+
+void Vista::updateSnapshot(RenderSnapshot& snap){
+    GameScreen* gameScreen = dynamic_cast<GameScreen*>(currentScreen_);
+    if (gameScreen)
+        gameScreen -> update(snap);
 }
 
 void Vista::render() {
@@ -53,4 +107,26 @@ void Vista::render() {
         currentScreen_ -> render(window_, font_);
         window_.display();
     }
+}
+
+bool Vista::isOnMainMenu() const
+{
+    return dynamic_cast<MainMenuScreen*>(
+        currentScreen_) != nullptr;
+}
+
+bool Vista::isOnGameOver() const
+{
+    return dynamic_cast<GameOverScreen*>(
+        currentScreen_) != nullptr;
+}
+
+std::vector<PlayerStats> Vista::getPlayerStats() const
+{
+    return cachedStats_;
+}
+
+Difficulty Vista::getDifficulty() const
+{
+    return cachedDifficulty_;
 }

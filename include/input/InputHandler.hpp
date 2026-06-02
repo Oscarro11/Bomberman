@@ -1,11 +1,11 @@
 #pragma once
 
-#include "entities/Player.hpp"
-#include "rendering/Vista.hpp"
-#include "utils/Directions.hpp"
-#include "core/IEngine.hpp"
 #include <set>
 #include <atomic>
+#include <SFML/Graphics.hpp>
+
+#include "core/IEngine.hpp"
+#include "utils/GameConstants.hpp"
 
 struct KeyMap
 {

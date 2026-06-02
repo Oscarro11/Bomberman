@@ -1,13 +1,15 @@
 #include "rendering/ScoresScreen.hpp"
 #include "rendering/MainMenuScreen.hpp"
 #include "utils/ScreenUtils.hpp"
+
 #include <algorithm>
 
 using namespace ScreenUtils;
 
-ScoresScreen::ScoresScreen(const std::vector<ScoreEntry>& scores)
-    : scores_(scores)
+ScoresScreen::ScoresScreen()
 {
+    scores_ = ScoreManager::load();
+
     // Sort by score descending on construction
     std::sort(scores_.begin(), scores_.end(),
         [](const ScoreEntry& a, const ScoreEntry& b) {
@@ -18,7 +20,7 @@ ScoresScreen::ScoresScreen(const std::vector<ScoreEntry>& scores)
 Screen* ScoresScreen::handleInput(sf::Keyboard::Key key) {
     if (key == sf::Keyboard::Escape || key == sf::Keyboard::Return)
         return new MainMenuScreen();
-    return nullptr;
+    return Screen::STAY;
 }
 
 void ScoresScreen::render(sf::RenderWindow& window,

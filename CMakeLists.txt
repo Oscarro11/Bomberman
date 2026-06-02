@@ -16,6 +16,8 @@ include_directories(include)
 
 # Sources
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
+list(REMOVE_ITEM SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/main.cpp)
 
 # Library
 add_library(core ${SRC_FILES})
@@ -27,15 +29,15 @@ target_link_libraries(bomberman core sfml-graphics sfml-window sfml-system Threa
 
 # Test
 add_executable(PlayerTest tests/PlayerTest.cpp)
-target_link_libraries(PlayerTest core)
+target_link_libraries(PlayerTest core sfml-system)
 
-# Linkeo
-target_link_libraries(bomberman
-    sfml-graphics
-    sfml-window
-    sfml-system
-    Threads::Threads
-)
+# Test
+add_executable(TableroTest tests/TableroTest.cpp)
+target_link_libraries(TableroTest core)
+
+# Test
+add_executable(RenderSnapshotTest tests/RenderSnapshotTest.cpp)
+target_link_libraries(RenderSnapshotTest core sfml-graphics sfml-window sfml-system Threads::Threads)
 
 # Flags
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
