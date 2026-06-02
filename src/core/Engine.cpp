@@ -14,7 +14,6 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     , bombsSystem_(jugadores_, bombas_, explosiones_, enemigos_, tablero_, eventBus_)
 {
     pthread_mutex_init(&inputMutex_, NULL);
-    pthread_mutex_init(&enemiesMutex_, NULL);
 
     singlePlayer_ = (jugadores.size() == 1);
 
@@ -63,16 +62,11 @@ Engine::~Engine()
     eventBus_.stop();
 
     if (started){
-        for (const pthread_t& thread : threads)
-        {
-            pthread_join(thread, NULL);
-        }
-
         pthread_join(logicThread_, NULL);
+        pthread_join(enemyThread_, NULL);
     }
     
     pthread_mutex_destroy(&inputMutex_);
-    pthread_mutex_destroy(&enemiesMutex_);
 }
 
 void Engine::start()
@@ -80,20 +74,12 @@ void Engine::start()
     if (state_ != MatchState::Preparing) return;
 
     state_ = MatchState::Playing;
-    // Player threads
-    for (int i = 0; i < jugadores_.size(); ++i)
-    {
-        pthread_t thread;
-
-        PlayerThreadArg* arg = new PlayerThreadArg{this, i};
-
-        pthread_create(&thread, nullptr, player_thread_process, arg);
-
-        threads.push_back(thread);
-    }
 
     // Logic thread
     pthread_create(&logicThread_, nullptr, logic_thread, this);
+
+    // Enemies thread
+    pthread_create(&enemyThread_, nullptr, enemy_thread, this);
 }
 
 void Engine::update(sf::Time dt)
@@ -101,27 +87,10 @@ void Engine::update(sf::Time dt)
     if (state_ != MatchState::Playing) return;
 
     roundTimer_ -= dt;
-
-    enemiesSystem_.update(dt);
     bombsSystem_.update(dt);
 
     updatePlayersState();
     updateGameState();
-}
-
-void* Engine::player_thread_process(void* arg)
-{
-    PlayerThreadArg* data = (PlayerThreadArg*) arg;
-    Engine* engine = data -> engine;
-    int playerId = data -> playerId;
-    delete data;
-
-    while (!engine -> isFinished()) {
-        //Pendiente
-        sf::sleep(sf::milliseconds(16));
-    }
-
-    return nullptr;
 }
 
 // logic_thread
@@ -129,11 +98,27 @@ void* Engine::logic_thread(void* arg)
 {
     Engine* engine = static_cast<Engine*>(arg);
 
-    while (!engine -> isFinished())
+    while (engine -> state() == MatchState::Playing)
     {
         auto evento = engine -> popEvento();
 
         if (evento) engine -> procesarEvento(*evento);
+    }
+
+    return nullptr;
+}
+
+void* Engine::enemy_thread(void* arg)
+{
+    Engine* engine = static_cast<Engine*>(arg);
+
+    sf::Clock clock;
+
+    while (engine -> state() == MatchState::Playing)
+    {
+        sf::Time dt = clock.restart();
+        engine->enemiesSystem_.update(dt);
+        sf::sleep(sf::milliseconds(16));
     }
 
     return nullptr;
@@ -216,14 +201,7 @@ void Engine::updateGameState()
             ++alivePlayers;
     }
 
-    bool noEnemies = true;
-    for (Enemigo& enemigo : enemigos_)
-    {
-        if (enemigo.alive()){
-            noEnemies = false;
-            break;
-        } 
-    }
+    bool noEnemies = !enemiesSystem_.hasLivingEnemies();
 
     if (singlePlayer_)
     {
@@ -518,6 +496,8 @@ void Engine::onEnemyDeath(Evento& evento)
 {
     int enemyId = evento.objetivo();
 
+    enemiesSystem_.killEnemy(enemyId);
+
     Position pos{
         evento.posicionX(),
         evento.posicionY()
@@ -528,10 +508,6 @@ void Engine::onEnemyDeath(Evento& evento)
         EntityType::Enemy,
         enemyId
     );
-
-    int killerId = evento.autor();
-    if (killerId >= 0 && killerId < (int)jugadores_.size())
-        jugadores_[killerId].anadirPuntos(100);
 }
 
 void Engine::onChainExplosion(Evento& evento)

@@ -8,7 +8,14 @@ EnemySystem::EnemySystem(
     , bus_(bus)
     , tablero_(tablero)
     , timer_(sf::Time::Zero)
-{}
+{
+    pthread_mutex_init(&enemyMutex_, nullptr);
+}
+
+EnemySystem::~EnemySystem()
+{
+    pthread_mutex_destroy(&enemyMutex_);
+}
 
 void EnemySystem::update(sf::Time dt)
 {
@@ -18,7 +25,9 @@ void EnemySystem::update(sf::Time dt)
         return;
 
     timer_ = sf::Time::Zero;
+    std::vector<Evento> events;
 
+    pthread_mutex_lock(&enemyMutex_);
     for (Enemigo& enemy : enemies_)
     {
         if (enemy.alive())
@@ -34,10 +43,14 @@ void EnemySystem::update(sf::Time dt)
                 default: break;
             }
 
-            Evento e = enemy.generarEventoMov(direction);
-
-            bus_.push(e);
+            events.push_back(enemy.generarEventoMov(direction));
         }  
+    }
+    pthread_mutex_unlock(&enemyMutex_);
+
+    for (auto& e : events)
+    {
+        bus_.push(e);
     }
 }
 
@@ -45,16 +58,18 @@ std::optional<int> EnemySystem::processMove(const Evento& evento)
 {
     int enemyId = evento.autor();
 
+    int dx = evento.data().mover.dx;
+    int dy = evento.data().mover.dy;
+
+    pthread_mutex_lock(&enemyMutex_);
     if (enemyId < 0 ||
         enemyId >= static_cast<int>(enemies_.size()))
     {
+        pthread_mutex_unlock(&enemyMutex_);
         return std::nullopt;
     }
 
     Enemigo& enemy = enemies_[enemyId];
-
-    int dx = evento.data().mover.dx;
-    int dy = evento.data().mover.dy;
 
     Position oldPos{
         enemy.posX(),
@@ -84,12 +99,16 @@ std::optional<int> EnemySystem::processMove(const Evento& evento)
                 newPos.x,
                 newPos.y);
             
+            pthread_mutex_unlock(&enemyMutex_);
             return occ.entityId;
         }
     }
 
     if (!tablero_.isWalkable(newPos))
+    {
+        pthread_mutex_unlock(&enemyMutex_);
         return std::nullopt;
+    }        
 
     bool moved =
         tablero_.moveOccupant(
@@ -98,11 +117,48 @@ std::optional<int> EnemySystem::processMove(const Evento& evento)
             enemyId);
 
     if (!moved)
+    {
+        pthread_mutex_unlock(&enemyMutex_);
         return std::nullopt;
-
+    }
+    
     enemy.setPosition(
         newPos.x,
         newPos.y);
     
+    pthread_mutex_unlock(&enemyMutex_);
     return std::nullopt;
+}
+
+void EnemySystem::killEnemy(int enemyId)
+{
+    pthread_mutex_lock(&enemyMutex_);
+
+    if (enemyId >= 0 &&
+        enemyId < static_cast<int>(enemies_.size()))
+    {
+        enemies_[enemyId].kill();
+    }
+
+    pthread_mutex_unlock(&enemyMutex_);
+}
+
+bool EnemySystem::hasLivingEnemies()
+{
+    pthread_mutex_lock(&enemyMutex_);
+
+    bool result = false;
+
+    for (const Enemigo& enemy : enemies_)
+    {
+        if (enemy.alive())
+        {
+            result = true;
+            break;
+        }
+    }
+
+    pthread_mutex_unlock(&enemyMutex_);
+
+    return result;
 }

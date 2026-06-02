@@ -52,20 +52,16 @@ class Engine : public IEngine
 
         sf::Time roundTimer_;
         pthread_t logicThread_;
+        pthread_t enemyThread_;
 
         //Clase dedica a leer inputs, tiene su propio hilo
         InputHandler inputHandler_;
-        std::vector<pthread_t> playerThreads_;
 
         //Mutex para proteger el acceso a jugadores cuando un nuevo input se lee.
         //Hay que revisar si es necesario
         mutable pthread_mutex_t inputMutex_;
-
-        //Mutex para proteger el acceso a la lista de enemigos
-        mutable pthread_mutex_t enemiesMutex_;
-
-        std::vector<pthread_t> threads;
-        static void* player_thread_process(void* arg);
+        
+        static void* enemy_thread(void* arg);
         static void* logic_thread(void* arg);
 
         void updatePlayersState();
@@ -115,11 +111,4 @@ class Engine : public IEngine
 struct EnemyThreadArg{
     Engine* engine;
     int     enemyId;
-};
-
-//Estructura para crear el hilo de cada jugador
-struct PlayerThreadArg
-{
-    Engine* engine;
-    int playerId;
 };

@@ -16,5 +16,6 @@ class Enemigo : public Personaje
         Evento generarEventoMov(Directions direction) override;
         std::optional<Evento> recibirDanio(const Personaje& atacante) override;
 
-        inline bool alive() {return alive_;}
+        inline bool alive() const {return alive_;}
+        inline void kill() { alive_ = false;}
 };
