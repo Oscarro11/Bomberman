@@ -1,8 +1,9 @@
 #include "entities/Explosion.hpp"
 
-Explosion::Explosion(int id,int posX,int posY,sf::Time duracion)
+Explosion::Explosion(int id,int posX,int posY,sf::Time duracion, int creatorId)
 {
     this->id_ = id;
+    this->creatorId_ = creatorId;
     this->posX = posX;
     this->posY = posY;
     this->duracion_ = duracion;
@@ -23,6 +24,11 @@ int Explosion::getX()
 int Explosion::getY()
 {
     return posY;
+}
+
+int Explosion::getCreatorId() const
+{
+    return creatorId_;
 }
 
 bool Explosion::expirada() const

@@ -124,7 +124,8 @@ void BombSystem::createExplosion(Position pos, int creador)
             explosionId,
             pos.x,
             pos.y,
-            sf::seconds(2.f) //Duracion de la explosion, pendiente de ajustar
+            sf::seconds(2.f), //Duracion de la explosion, pendiente de ajustar
+            creador
         )
     );
 

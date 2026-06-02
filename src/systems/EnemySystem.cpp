@@ -2,9 +2,11 @@
 
 EnemySystem::EnemySystem(
     std::vector<Enemigo>& enemies,
+    std::vector<Explosion>& explosions,
     Tablero& tablero,
     EventBus& bus)
     : enemies_(enemies)
+    , explosions_(explosions)
     , bus_(bus)
     , tablero_(tablero)
     , timer_(sf::Time::Zero)
@@ -85,6 +87,17 @@ std::optional<int> EnemySystem::processMove(const Evento& evento)
 
     for (const Occupant& occ : cell.occupants)
     {
+        if (occ.type == EntityType::Explosion)
+        {
+            int explosionId = occ.entityId;
+            int creator = explosions_[explosionId].getCreatorId();
+            bus_.push(Evento::enemyDeath(enemyId, creator, oldPos.x, oldPos.y));
+
+            pthread_mutex_unlock(&enemyMutex_);
+            return std::nullopt;
+        }
+        
+        
         if (occ.type == EntityType::Player1 ||
             occ.type == EntityType::Player2 ||
             occ.type == EntityType::Player3 ||

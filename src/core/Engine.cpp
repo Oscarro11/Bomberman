@@ -10,7 +10,7 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     , inputHandler_(this)
     , tablero_(tableroSource)
     , roundTimer_(sf::seconds(180.f))
-    , enemiesSystem_(enemigos_, tablero_, eventBus_)
+    , enemiesSystem_(enemigos_, explosiones_, tablero_, eventBus_)
     , bombsSystem_(jugadores_, bombas_, explosiones_, enemigos_, tablero_, eventBus_)
 {
     pthread_mutex_init(&inputMutex_, NULL);
@@ -245,6 +245,12 @@ RenderSnapshot Engine::makeRenderSnapshot()
                     {
                         snapshot.entities[y][x] = EntityType::Explosion;
                         break;
+                    }
+
+                    if (occ.type == EntityType::Enemy)
+                    {
+                        snapshot.entities[y][x] = EntityType::Enemy;
+                        break;
                     } 
                 }
                 
@@ -290,12 +296,14 @@ void Engine::confirmGameOver() {
 
     // Save every player's result
     for (const Player& p : jugadores_) {
-        ScoreManager::save(ScoreEntry{
-            p.nombre(),
-            p.puntaje(),
-            p.vida() > 0 ? 1 : 0,   // win: 1 if alive, 0 if not
-            p.muertes()               // add deaths counter to Player
-        });
+        if (p.nombre() != ""){
+                ScoreManager::save(ScoreEntry{
+                p.nombre(),
+                p.puntaje(),
+                p.vida() > 0 ? 1 : 0,   // win: 1 if alive, 0 if not
+                p.muertes()               // add deaths counter to Player
+            });
+        }
     }
 
     state_ = MatchState::Finished;

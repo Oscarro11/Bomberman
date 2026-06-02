@@ -4,11 +4,12 @@
 
 #include "entities/Enemigo.hpp"
 #include "entities/Tablero.hpp"
+#include "entities/Explosion.hpp"
 #include "systems/EventBus.hpp"
 
 class EnemySystem {
     public:
-        EnemySystem(std::vector<Enemigo>& enemies, Tablero& tablero, EventBus& bus);
+        EnemySystem(std::vector<Enemigo>& enemies, std::vector<Explosion>& explosions, Tablero& tablero, EventBus& bus);
         ~EnemySystem();
 
         void update(sf::Time dt);
@@ -19,6 +20,7 @@ class EnemySystem {
 
     private:
         std::vector<Enemigo>& enemies_;
+        std::vector<Explosion>& explosions_;
         EventBus& bus_;
         Tablero& tablero_;
         
