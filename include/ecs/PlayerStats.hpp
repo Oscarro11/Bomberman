@@ -7,7 +7,7 @@ struct PlayerStats{
 
     int maxBombas = 3;
     int rangoExplosion = 3;
-    int velocidad = 3;
+    int puntaje = 0;
 };
 
 struct PlayerConfig{

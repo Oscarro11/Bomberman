@@ -3,7 +3,7 @@
 enum PowerUpType : int{
     maxBomb,
     explosionRange,
-    speed
+    life
 };
 
 class PowerUp

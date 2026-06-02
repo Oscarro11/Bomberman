@@ -7,7 +7,7 @@
 
 struct PlayerData{
     std::string nombre;
-    int id, vida, maxBombas, bombsPlaced, rangoExplosion, velocidad;
+    int id, vida, maxBombas, bombsPlaced, rangoExplosion, puntaje;
 };
 
 struct HUDData{

@@ -164,11 +164,11 @@ void GameScreen::renderPlayerCards(sf::RenderWindow& window,
             { "          |",  COL_BORDER },
         }, startRow + 4, startCol);
 
-        // Row 5 — velocidad
+        // Row 5 — puntaje
         drawSegmentsAt(window, font, {
-            { "| Vel:     ",  COL_DIM   },
-            { std::to_string(p.velocidad), COL_VALUE },
-            { "          |",  COL_BORDER },
+            { "| Score:     ",  COL_DIM   },
+            { std::to_string(p.puntaje), COL_VALUE },
+            { "        |",  COL_BORDER },
         }, startRow + 5, startCol);
 
         // Row 6 — bottom border

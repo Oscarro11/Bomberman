@@ -1,7 +1,7 @@
 #include "entities/Player.hpp"
 #include "entities/PowerUp.hpp"
 
-Player::Player(int id, std::string nombre, int vida, int maxBombas, int rangoExplosion, int velocidad, int spawnPointX, int spawnPointY)
+Player::Player(int id, std::string nombre, int vida, int maxBombas, int rangoExplosion, int spawnPointX, int spawnPointY)
 {
     this -> id_ = id;
     this -> nombre_ = nombre;
@@ -11,7 +11,6 @@ Player::Player(int id, std::string nombre, int vida, int maxBombas, int rangoExp
     this -> maxBombas_ = maxBombas;
     this -> restBombas_ = maxBombas;
     this -> rangoExplosion_ = rangoExplosion;
-    this -> velocidad_ = velocidad;
 
     this -> spawnPointX_ = spawnPointX;
     this -> posX_ = spawnPointX;
@@ -65,8 +64,8 @@ void Player::actualizarStat(PowerUpType tipo, int cantidad)
         case explosionRange: 
             this -> rangoExplosion_ += cantidad;
             break;
-        case speed: 
-            this -> velocidad_ += cantidad;
+        case life: 
+            this -> vida_ += cantidad;
             break;
         default: break;
     }

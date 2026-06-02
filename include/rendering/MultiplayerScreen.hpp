@@ -17,13 +17,11 @@ class MultiplayerConfigurationScreen : public Screen {
         std::vector<const PlayerConfig*> getPlayerConfigs() const;
 
     private:
-        static constexpr int NUM_ATTRS  = 4; // 0=nombre, 1=bombas, 2=rango, 3=vel
+        static constexpr int NUM_ATTRS  = 3; // 0=nombre, 1=bombas, 2=rango
         static constexpr int MAX_BOMBAS = 8;
         static constexpr int MIN_BOMBAS = 1;
         static constexpr int MAX_RANGO  = 6;
         static constexpr int MIN_RANGO  = 1;
-        static constexpr int MAX_VEL = 5;
-        static constexpr int MIN_VEL = 1;
 
         bool typingName_ = false;
         static constexpr int MAX_NAME_LEN = 5;

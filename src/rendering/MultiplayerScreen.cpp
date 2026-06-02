@@ -249,9 +249,6 @@ void MultiplayerConfigurationScreen::drawPlayerCard(sf::RenderWindow &window,
     drawAttrLine(window, font, "Rango ", cfg.stats.rangoExplosion,
                  cfg.isSelected, selectedAttr == 2,
                  row++, startCol);
-    drawAttrLine(window, font, "Vel   ", (int)cfg.stats.velocidad,
-                 cfg.isSelected, selectedAttr == 3,
-                 row++, startCol);
 
     drawLineAt(window, font, " +----------------+", row++, startCol, COL_BORDER);
 }
@@ -274,7 +271,7 @@ void MultiplayerConfigurationScreen::drawAttrLine(sf::RenderWindow& window,
 
     // Pad label to fixed width so value always starts at same x
     std::string paddedLabel = label;
-    paddedLabel.resize(6, ' ');   // "Bombas" = 6, "Rango " = 6, "Vel   " = 6
+    paddedLabel.resize(6, ' ');   // "Bombas" = 6, "Rango " = 6
 
     drawSegmentsAt(window, font, {
         { " | ",          COL_BORDER   },
@@ -295,7 +292,6 @@ void MultiplayerConfigurationScreen::incrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
         case 1: p.stats.maxBombas      = std::min(p.stats.maxBombas + 1,      ( int) MAX_BOMBAS);  break;
         case 2: p.stats.rangoExplosion = std::min(p.stats.rangoExplosion + 1,  ( int) MAX_RANGO);  break;
-        case 3: p.stats.velocidad      = std::min(p.stats.velocidad + 1,     MAX_VEL);    break;
     }
 }
 
@@ -303,6 +299,5 @@ void MultiplayerConfigurationScreen::decrementAttr(PlayerConfig& p, int attr) {
     switch (attr) {
         case 1: p.stats.maxBombas      = std::max(p.stats.maxBombas - 1,      ( int) MIN_BOMBAS); break;
         case 2: p.stats.rangoExplosion = std::max(p.stats.rangoExplosion - 1, ( int) MIN_RANGO); break;
-        case 3: p.stats.velocidad      = std::max(p.stats.velocidad - 1,    MIN_VEL);   break;
     }
 }

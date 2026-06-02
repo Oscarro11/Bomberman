@@ -23,7 +23,7 @@ Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     {
         const PlayerStats& info = jugadores.at(i);
 
-        Player player = Player(i, info.nombre, 3, info.maxBombas, info.rangoExplosion,  info.velocidad, playersSpawn[i].position.x, playersSpawn[i].position.y);
+        Player player = Player(i, info.nombre, 3, info.maxBombas, info.rangoExplosion, playersSpawn[i].position.x, playersSpawn[i].position.y);
         this -> jugadores_.push_back(player);
         
         switch (i)
@@ -266,7 +266,7 @@ RenderSnapshot Engine::makeRenderSnapshot()
             p.maxBombas(),
             p.restBombas(),
             p.rangoExplosion(),
-            static_cast<int>(p.velocidad())
+            p.puntaje()
         });
     }
 
@@ -495,8 +495,10 @@ void Engine::onTileDestroyed(Evento& evento)
 void Engine::onEnemyDeath(Evento& evento)
 {
     int enemyId = evento.objetivo();
+    int playerId = evento.autor();
 
     enemiesSystem_.killEnemy(enemyId);
+    jugadores_[playerId].anadirPuntos(100);
 
     Position pos{
         evento.posicionX(),
