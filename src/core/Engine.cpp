@@ -3,6 +3,7 @@
 #include "entities/Enemigo.hpp"
 #include "entities/PowerUp.hpp"
 #include "utils/AssetsUtils.hpp"
+#include "systems/ScoreManager.hpp"
 
 Engine::Engine(std::string tableroSource, std::vector<PlayerStats>& jugadores)
     : state_(MatchState::Preparing)
@@ -300,11 +301,26 @@ RenderSnapshot Engine::makeRenderSnapshot()
 }
 
 void Engine::confirmGameOver() {
-    if (state_ ==
-        MatchState::WaitingForGameOverConfirmation)
-    {
-        state_ = MatchState::Finished;
+    if (state_ != MatchState::WaitingForGameOverConfirmation)
+        return;
+
+    // Award survival bonus to winner
+    int winnerId = getWinnerId();
+    
+    if (winnerId >= 0)
+        jugadores_[winnerId].anadirPuntos(300 + (int)roundTimer_.asSeconds() * 10);
+
+    // Save every player's result
+    for (const Player& p : jugadores_) {
+        ScoreManager::save(ScoreEntry{
+            p.nombre(),
+            p.puntaje(),
+            p.vida() > 0 ? 1 : 0,   // win: 1 if alive, 0 if not
+            p.muertes()               // add deaths counter to Player
+        });
     }
+
+    state_ = MatchState::Finished;
 }
 
 std::string Engine::getWinnerName() const {
@@ -399,6 +415,7 @@ void Engine::danioPlayer(int playerId)
     if (player.esInvencible())
         return;
 
+    player.anadirMuerte();
     player.activarInvencibilidad();
 
     auto deathEvent = player.recibirDanio(player);
@@ -511,6 +528,10 @@ void Engine::onEnemyDeath(Evento& evento)
         EntityType::Enemy,
         enemyId
     );
+
+    int killerId = evento.autor();
+    if (killerId >= 0 && killerId < (int)jugadores_.size())
+        jugadores_[killerId].anadirPuntos(100);
 }
 
 void Engine::onChainExplosion(Evento& evento)

@@ -19,6 +19,7 @@ class Player : public Personaje
         int restBombas_;
         int rangoExplosion_;
         int velocidad_;
+        int muertes_ = 0;
 
         int spawnPointX_;
         int spawnPointY_;
@@ -37,6 +38,9 @@ class Player : public Personaje
         void actualizarStat(PowerUpType tipo, int cantidad);
         void recuperarBomba();
 
+        void anadirMuerte() { muertes_ += 1; }
+        void anadirPuntos(int points) { puntaje_ += points; }
+
         bool esInvencible() const;
         void activarInvencibilidad();
         void actualizarInvencibilidad();
@@ -46,6 +50,8 @@ class Player : public Personaje
         int restBombas() const {return restBombas_;};
         int rangoExplosion() const {return rangoExplosion_;};
         int velocidad() const {return velocidad_;};
+        int muertes() const {return muertes_;};
         int spawnPointX() const {return spawnPointX_;};
         int spawnPointY() const {return spawnPointY_;};
+        int puntaje() const {return puntaje_;};
 };

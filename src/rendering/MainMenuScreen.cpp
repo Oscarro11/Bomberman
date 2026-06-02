@@ -14,21 +14,10 @@ Screen *MainMenuScreen::handleInput(sf::Keyboard::Key key)
     
     if (key == sf::Keyboard::Return) {
         if (selectedOption_ == 0) return new InstructionsScreen;
-        if (selectedOption_ == 1)
-        {
-            //Example scores, should be removed later
-            std::vector<ScoreEntry> scores = 
-                {ScoreEntry{"Ana", 2000, 1, 2},
-                 ScoreEntry{"Pablo", 2500, 3, 3},
-                 ScoreEntry{"Juan", 4000, 3, 2},
-                 ScoreEntry{"Mateo", 6000, 5, 3}};
-
-            return new ScoresScreen(scores);
-        }
-            
+        if (selectedOption_ == 1) return new ScoresScreen;            
         if (selectedOption_ == 2) return new SinglePlayerConfigurationScreen;
-        if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;    //Multi player mode, just a preview
-        if (selectedOption_ == 4) return new ExitScreen;   // quit handled by Vista
+        if (selectedOption_ == 3) return new MultiplayerConfigurationScreen;
+        if (selectedOption_ == 4) return new ExitScreen;
     }
     
     return Screen::STAY;   // stay on this screen
