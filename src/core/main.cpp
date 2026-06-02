@@ -4,6 +4,13 @@
 #include "utils/ScreenUtils.hpp"
 #include "ecs/PlayerStats.hpp"
 
+enum class AppState
+{
+    Menu,
+    Playing,
+    GameOver
+};
+
 int main() {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Bomberman", sf::Style::Fullscreen);
     sf::Font font;
@@ -15,106 +22,138 @@ int main() {
     Vista vista(window, font);
     sf::Clock clock;
     
+    AppState appState = AppState::Menu;
+
+    Engine* engine = nullptr;
+    InputHandler* inputHandler = nullptr;
+
     // Menu loop — runs until player hits Start
-    while (window.isOpen() && !vista.shouldStartGame()) {
+    while (window.isOpen())
+    {
         sf::Event event;
-        
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
+        std::vector<sf::Keyboard::Key> pressedKeys;
+
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                window.close();
+            }
+
+            if (event.type == sf::Event::KeyPressed)
+            {
+                pressedKeys.push_back(event.key.code);
+            }
+
             vista.handleEvent(event);
         }
-        vista.render();
-    }
 
-    // Hand off to game loop
-    if (vista.shouldStartGame()) {
-       std::vector<PlayerStats> playerInfo = vista.getPlayerStats();
-
-        Difficulty difficulty = vista.getDifficulty();
-
-        std::string mapa = "mapa2.txt";
-
-        if (playerInfo.size() == 1)
+        switch (appState)
         {
-            switch (difficulty)
-            {
-                case Difficulty::Easy:
-                    mapa = "mapa_sp_uno.txt";
-                    break;
-
-                case Difficulty::Medium:
-                    mapa = "mapa_sp_dos.txt";
-                    break;
-
-                case Difficulty::Hard:
-                    mapa = "mapa_sp_tres.txt";
-                    break;
-            }
-        }
-        
-        Engine engine(mapa, playerInfo);
-        engine.start();
-
-        InputHandler inputHandler(&engine);
-
-        vista.transitionToGame();
-
-        while (window.isOpen() && !engine.isFinished())
-        {
-            sf::Event event;
-            std::vector<sf::Keyboard::Key> pressedKeys;
-            sf::Time dt = clock.restart();
- 
-            while (window.pollEvent(event))
-            {
-                if (event.type == sf::Event::Closed)
+            case AppState::Menu:
                 {
-                    window.close();
-                }
-                else if (event.type == sf::Event::KeyPressed){
-                    if (event.key.code == sf::Keyboard::Escape)
-                    {
-                        window.close();
-                        break;
+                    if (vista.shouldStartGame()){
+                        std::vector<PlayerStats> playerInfo =
+                        vista.getPlayerStats();
+
+                        Difficulty difficulty =
+                            vista.getDifficulty();
+
+                        std::string mapa = "mapa2.txt";
+
+                        if (playerInfo.size() == 1)
+                        {
+                            switch (difficulty)
+                            {
+                                case Difficulty::Easy:
+                                    mapa = "mapa_sp_uno.txt";
+                                    break;
+
+                                case Difficulty::Medium:
+                                    mapa = "mapa_sp_dos.txt";
+                                    break;
+
+                                case Difficulty::Hard:
+                                    mapa = "mapa_sp_tres.txt";
+                                    break;
+                            }
+                        }
+
+                        engine = new Engine(mapa, playerInfo);
+                        engine->start();
+
+                        inputHandler =
+                            new InputHandler(engine);
+
+                        vista.transitionToGame();
+
+                        vista.consumeStartGame();
+
+                        appState = AppState::Playing;
                     }
 
-                    pressedKeys.push_back(event.key.code);
-                }
+                vista.render();
+                break;
             }
-            
-            if (!pressedKeys.empty())
+
+            case AppState::Playing:
             {
-                inputHandler.update(pressedKeys);
+                sf::Time dt = clock.restart();
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+                {
+                    window.close();
+                    break;
+                }
+
+                if (engine)
+                {
+                    inputHandler->update(pressedKeys);
+
+                    engine->update(dt);
+
+                    auto snapshot =
+                        engine->makeRenderSnapshot();
+
+                    vista.updateSnapshot(snapshot);
+
+                    if (engine->isFinished())
+                    {
+                        vista.transitionToGameOver(
+                            engine->getWinnerName(),
+                            engine->getWinnerId()
+                        );
+
+                        delete inputHandler;
+                        inputHandler = nullptr;
+
+                        delete engine;
+                        engine = nullptr;
+
+                        appState = AppState::GameOver;
+                    }
+                }
+
+                vista.render();
+                break;
             }
-
-            engine.update(dt);
             
-            // Take snapshot under mutex
-            RenderSnapshot snapshot;
-            snapshot = engine.makeRenderSnapshot();
+            case AppState::GameOver:
+            {
+                vista.render();
 
-            vista.updateSnapshot(snapshot);
+                if (vista.isOnMainMenu())
+                {
+                    appState = AppState::Menu;
+                }
 
-            // Render through base class — no arguments
-            vista.render();
-
+                break;
+            }
             sf::sleep(sf::milliseconds(16));
         }
-
-        while (window.isOpen()) {
-            vista.transitionToGameOver(engine.getWinnerName(), engine.getWinnerId());
-
-            while (window.isOpen()) {
-                sf::Event event;
-                while (window.pollEvent(event)) {
-                    if (event.type == sf::Event::Closed)
-                        window.close();
-                    vista.handleEvent(event);
-                }
-                vista.render();
-                sf::sleep(sf::milliseconds(16));
-            }
-        }
     }
+
+    delete inputHandler;
+    delete engine;
     return 0;
 }

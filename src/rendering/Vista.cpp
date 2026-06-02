@@ -88,6 +88,12 @@ void Vista::transitionToGameOver(std::string winnerName, int winnerId)
     currentScreen_ = new GameOverScreen(winnerName, winnerId);
 }
 
+void Vista::transitionToMainMenu()
+{
+    delete currentScreen_;
+    currentScreen_ = new MainMenuScreen;
+}
+
 void Vista::updateSnapshot(RenderSnapshot& snap){
     GameScreen* gameScreen = dynamic_cast<GameScreen*>(currentScreen_);
     if (gameScreen)
@@ -101,6 +107,18 @@ void Vista::render() {
         currentScreen_ -> render(window_, font_);
         window_.display();
     }
+}
+
+bool Vista::isOnMainMenu() const
+{
+    return dynamic_cast<MainMenuScreen*>(
+        currentScreen_) != nullptr;
+}
+
+bool Vista::isOnGameOver() const
+{
+    return dynamic_cast<GameOverScreen*>(
+        currentScreen_) != nullptr;
 }
 
 std::vector<PlayerStats> Vista::getPlayerStats() const

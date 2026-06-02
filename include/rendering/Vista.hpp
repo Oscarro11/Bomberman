@@ -17,11 +17,17 @@ class Vista {
                 void handleEvent(const sf::Event& event);
                 void render();
                 bool shouldStartGame() const { return startGame_; }
+                void consumeStartGame() { startGame_ = false;}
+                
+                bool isOnMainMenu() const;
+                bool isOnGameOver() const;
+
                 std::vector<PlayerStats> getPlayerStats() const;
 
                 void updateSnapshot(RenderSnapshot& snap);
                 void transitionToGame();
                 void transitionToGameOver(std::string winnerName, int winnerId);
+                void transitionToMainMenu();
 
                 Difficulty getDifficulty() const;
 

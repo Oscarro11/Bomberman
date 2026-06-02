@@ -228,12 +228,12 @@ void Engine::updateGameState()
     if (singlePlayer_)
     {
         if (alivePlayers == 0) state_ = MatchState::WaitingForGameOverConfirmation;
+        if (noEnemies) state_ = MatchState::WaitingForGameOverConfirmation;
     }
     else
     {
         if (alivePlayers <= 1) state_ = MatchState::WaitingForGameOverConfirmation;
     }
-    if (noEnemies) state_ = MatchState::WaitingForGameOverConfirmation;
     if (roundTimer_ <= sf::Time::Zero) state_ = MatchState::WaitingForGameOverConfirmation;
 }
 
