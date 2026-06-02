@@ -66,7 +66,7 @@ int main() {
                             switch (difficulty)
                             {
                                 case Difficulty::Easy:
-                                    mapa = "mapa_test_enemigos.txt";
+                                    mapa = "mapa_sp_uno.txt";
                                     break;
 
                                 case Difficulty::Medium:

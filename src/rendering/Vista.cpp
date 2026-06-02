@@ -67,7 +67,7 @@ void Vista::handleEvent(const sf::Event& event)
 
         cachedStats_.clear();
 
-        cachedStats_.push_back(PlayerStats{});
+        cachedStats_.push_back(PlayerStats{spScreen->getPlayerName(), 3, 3, 0});
 
         startGame_ = true;
         return;
